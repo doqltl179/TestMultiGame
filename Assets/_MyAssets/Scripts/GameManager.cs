@@ -1,26 +1,21 @@
 using Mu3Library.Utility;
+using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour {
-    public static GameManager Instance {
-        get {
-            if(instance == null) {
-                instance = FindObjectOfType<GameManager>();
-                if(instance == null) {
-                    Debug.LogError($"`{nameof(GameManager)}` not found.");
-                }
-            }
+public class GameManager : GenericSingleton<GameManager> {
 
-            return instance;
-        }
-    }
-    private static GameManager instance;
 
 
 
     private void Awake() {
+        if(SteamManager.Initialized) {
+            string name = SteamFriends.GetPersonaName();
+
+            Debug.Log(name);
+        }
+
         KeyCodeInputCollector.Instance.InitCollectKeys();
     }
 
@@ -28,8 +23,5 @@ public class GameManager : MonoBehaviour {
         Time.fixedDeltaTime = 1.0f / 144.0f;
 
         CameraManager.Instance.SetCamera(Camera.main);
-
-        //HostMigrationManager.Instance.SetToHost();
-        HostMigrationManager.Instance.SetupRelay(4);
     }
 }

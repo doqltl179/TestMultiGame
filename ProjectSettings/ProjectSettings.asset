@@ -844,7 +844,7 @@ PlayerSettings:
     PS5: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
     QNX: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
     Stadia: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
-    Standalone: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
+    Standalone: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN;STEAMWORKS_NET
     VisionOS: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
     WebGL: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
     Windows Store Apps: DOTWEEN
@@ -958,11 +958,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 
+  cloudProjectId: da7b40c9-7521-4fce-b344-556660e6ab1e
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: TestMultiGame
+  organizationId: omomyo
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
