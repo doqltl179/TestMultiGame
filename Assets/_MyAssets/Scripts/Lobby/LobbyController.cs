@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MainController : MonoBehaviour {
-    [SerializeField] private MainUI mainUI;
+public class LobbyController : MonoBehaviour {
+    [SerializeField] private LobbyUI lobbyUI;
 
 
 
@@ -18,7 +18,5 @@ public class MainController : MonoBehaviour {
         Time.fixedDeltaTime = 1.0f / Application.targetFrameRate;
 
         CameraManager.Instance.InitCamera();
-
-        GameNetworkManager.Instance.Init();
     }
 }

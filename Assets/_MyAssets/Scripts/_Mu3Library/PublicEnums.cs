@@ -25,6 +25,7 @@ namespace Mu3Library {
         None,
 
         Main,
+        Lobby, 
         Game,
         Credits,
     }

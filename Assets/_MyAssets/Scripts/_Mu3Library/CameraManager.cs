@@ -34,8 +34,19 @@ namespace Mu3Library.Utility {
 
 
         #region Utility
-        public void SetCamera(Camera cam) {
-            this.cam = cam;
+        public void InitCamera() {
+            if(cam == null) {
+                cam = Camera.main;
+                cam.transform.SetParent(transform);
+            }
+            else {
+                var cameras = FindObjectsOfType<Camera>();
+                for(int i = 0; i < cameras.Length; i++) {
+                    if(cameras[i] != cam && cameras[i].CompareTag("MainCamera")) {
+                        Destroy(cameras[i].gameObject);
+                    }
+                }
+            }
         }
         #endregion
     }

@@ -4,15 +4,30 @@ using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Mu3Library.Log {
     public class LogCapture : MonoBehaviour {
+        [SerializeField] private CanvasGroup canvasGroup;
+        public float Alpha {
+            get => canvasGroup.alpha;
+            set => canvasGroup.alpha = value;
+        }
+
+        [Space(20)]
         [SerializeField] private LogMessage logObj;
         [SerializeField] private Transform logParent;
         private List<LogMessage> logs = new List<LogMessage>();
 
+        [Space(20)]
         [SerializeField] private TextMeshProUGUI logCountText;
         private Dictionary<LogType, int> logCount = new Dictionary<LogType, int>();
+
+        [Space(20)]
+        public bool printStackTrace_Log = false;
+        public bool printStackTrace_Warning = false;
+        public bool printStackTrace_Error = true;
+        public bool printStackTrace_Exception = true;
 
 
 
@@ -44,13 +59,30 @@ namespace Mu3Library.Log {
             }
             lm.transform.SetParent(logParent);
             lm.transform.localScale = Vector3.one;
+
+            string logText = condition;
+            switch(type) {
+                case LogType.Log: if(printStackTrace_Log) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+                case LogType.Warning: if(printStackTrace_Warning) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+                case LogType.Error: if(printStackTrace_Error) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+                case LogType.Exception: if(printStackTrace_Exception) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+            }
+            lm.SetLog(type, logText);
+
             lm.gameObject.SetActive(true);
-
-            lm.SetLog(type, $"{condition}\nStack: {stackTrace}");
-
             logs.Add(lm);
 
             AddLogCount(type);
+
+            StartCoroutine(RefreshLogRect(lm));
+        }
+
+        private IEnumerator RefreshLogRect(LogMessage log) {
+            yield return null;
+            log.gameObject.SetActive(false);
+
+            yield return null;
+            log.gameObject.SetActive(true);
         }
         #endregion
 
