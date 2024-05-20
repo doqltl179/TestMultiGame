@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
+//-------------------------------------------------------------------------------
+// ServerRpc => Client에서 호출하며 Server에서 실행.
+// ClientRpc => Server에서 호출하며 Client에서 실행.
+//-------------------------------------------------------------------------------
 public class NetworkTransmission : NetworkBehaviour {
     public static NetworkTransmission Instance {
         get {
@@ -16,50 +20,27 @@ public class NetworkTransmission : NetworkBehaviour {
     }
     private static NetworkTransmission instance;
 
-    [SerializeField] private ChatController chatController;
-
 
 
     [ServerRpc(RequireOwnership = false)]
-    public void IWishToSendAChatServerRPC(string message, ulong fromWho) {
-        ChatFromServerClientRPC(message, fromWho);
+    public void Ready_ServerRpc(ulong from, bool value) {
+        Debug.Log($"Ready_ServerRpc. from: {from}, value: {value}");
+
+        Ready_ClientRpc(from, value);
     }
 
     [ClientRpc]
-    private void ChatFromServerClientRPC(string message, ulong fromWho) {
-        chatController.SendChat(message, fromWho, false);
+    public void Ready_ClientRpc(ulong from, bool value) {
+        Debug.Log($"Ready_ClientRpc. from: {from}, value: {value}");
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void AddMeToDictionaryServerRPC(ulong steamId, string steamName, ulong clientId) {
-        Debug.Log($"AddMeToDictionaryServerRPC. steamId: {steamId}, name: {steamName}, clientId: {clientId}");
-        chatController.SendChat($"[{steamName}] has joined", clientId, true);
-    }
+    public void SendChatToServer_ServerRpc(ulong from, string message) {
 
-    [ServerRpc(RequireOwnership = false)]
-    public void RemoveMeFromDictionaryServerRPC(ulong steamId) {
-        Debug.Log($"RemoveMeFromDictionaryServerRPC. steamId: {steamId}");
-        RemovePlayerFromDictionaryClientRPC(steamId);
     }
 
     [ClientRpc]
-    private void RemovePlayerFromDictionaryClientRPC(ulong steamId) {
-        Debug.Log("Removing client");
-    }
+    public void SendChatToClient_ClientRpc(ulong from, string message) {
 
-    [ClientRpc]
-    public void UpdateClientsPlayerInfoClientRPC(ulong steamId, string steamName, ulong clientId) {
-        Debug.Log($"UpdateClientsPlayerInfoClientRPC. steamId: {steamId}, name: {steamName}, clientId: {clientId}");
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void IsTheClientReadyServerRPC(bool ready, ulong clientId) {
-        Debug.Log($"IsTheClientReadyServerRPC. ready: {ready}, clientId: {clientId}");
-        AClientMightBeReadyClientRPC(ready, clientId);
-    }
-
-    [ClientRpc]
-    private void AClientMightBeReadyClientRPC(bool ready, ulong clientId) {
-        Debug.Log($"AClientMightBeReadyClientRPC. ready: {ready}, clientId: {clientId}");
     }
 }

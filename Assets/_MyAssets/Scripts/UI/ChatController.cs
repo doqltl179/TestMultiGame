@@ -1,9 +1,7 @@
 using Mu3Library.Utility;
-using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Netcode;
 using UnityEngine;
 
 public class ChatController : MonoBehaviour {
@@ -18,17 +16,31 @@ public class ChatController : MonoBehaviour {
 
     [Space(20)]
     [SerializeField] private ChatObject chatObj;
-    [SerializeField] private Transform textParent;
+    [SerializeField] private RectTransform textParent;
     private List<ChatObject> messages = new List<ChatObject>();
 
+    public bool IsDestroyed { get; private set; }
 
+
+
+    private void Awake() {
+        IsDestroyed = false;
+    }
+
+    private void OnDestroy() {
+        IsDestroyed = true;
+    }
 
     private void Update() {
-        if(!string.IsNullOrEmpty(inputField.text) && inputField.text != " " && Input.GetKeyDown(KeyCode.Return)) {
-            AddChat(SteamClient.Name, inputField.text);
+        if(Input.GetKeyDown(KeyCode.Return)) {
+            if(!string.IsNullOrEmpty(inputField.text) && inputField.text != " ") {
+                GameNetworkManager.Instance.SendChat(inputField.text);
 
-            NetworkTransmission.Instance.IWishToSendAChatServerRPC($"{SteamClient.Name} : {inputField.text}", NetworkManager.Singleton.LocalClientId);
-            inputField.text = "";
+                inputField.text = "";
+
+                inputField.ActivateInputField();
+                inputField.Select();
+            }
         }
     }
 
@@ -40,15 +52,7 @@ public class ChatController : MonoBehaviour {
         messages.Clear();
     }
 
-    public void SendChat(string message, ulong fromWho, bool isServer) {
-        if(!isServer) {
-
-        }
-    }
-    #endregion
-
-    #region Action
-    private void AddChat(string name, string message) {
+    public void AddChat(string name, string message) {
         ChatObject chat = UnityObjectPoolManager.Instance.GetObject<ChatObject>();
         if(chat == null) {
             chat = Instantiate(chatObj);

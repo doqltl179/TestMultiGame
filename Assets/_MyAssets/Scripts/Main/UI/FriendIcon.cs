@@ -8,6 +8,15 @@ public class FriendIcon : MonoBehaviour {
     [SerializeField] private Image icon;
     [SerializeField] private TextMeshProUGUI nameText;
 
+    [Space(20)]
+    [SerializeField] private GameObject readyObj;
+    public bool IsReady {
+        get => readyObj.activeSelf;
+        set => readyObj.SetActive(value);
+    }
+
+    public ulong ID = 0;
+
 
 
     #region Utility
