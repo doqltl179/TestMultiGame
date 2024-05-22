@@ -33,6 +33,14 @@ namespace Mu3Library.Utility {
 
         #region Float
         public static float GetDistanceXZ(Vector3 from, Vector3 to) => Vector2.Distance(new Vector2(from.x, from.z), new Vector2(to.x, to.z));
+
+        public static float InverseLerpUnclamped(float from, float to, float a) => (a - from) / (to - from);
+
+        public static float MinMax(float min, float max, float value) {
+            if(value > max) return max;
+            else if(value < min) return min;
+            else return value;
+        }
         #endregion
 
         #region Boolean
