@@ -1,4 +1,6 @@
+using Mu3Library.Utility;
 using Steamworks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -12,13 +14,26 @@ public class NetworkTransmission : NetworkBehaviour {
     public static NetworkTransmission Instance {
         get {
             if(instance == null) {
-                instance = FindObjectOfType<NetworkTransmission>();
+                NetworkTransmission pm = FindObjectOfType<NetworkTransmission>();
+                if(pm == null) {
+                    GameObject resource = ResourceLoader.GetResource<GameObject>($"Network/{nameof(NetworkTransmission)}");
+                    if(resource != null) {
+                        GameObject go = Instantiate(resource);
+                        DontDestroyOnLoad(go);
+
+                        pm = go.GetComponent<NetworkTransmission>();
+                    }
+                }
+
+                instance = pm;
             }
 
             return instance;
         }
     }
     private static NetworkTransmission instance;
+
+    public Action<ulong, bool> OnClickReady;
 
 
 
@@ -32,6 +47,8 @@ public class NetworkTransmission : NetworkBehaviour {
     [ClientRpc]
     public void Ready_ClientRpc(ulong from, bool value) {
         Debug.Log($"Ready_ClientRpc. from: {from}, value: {value}");
+
+        OnClickReady?.Invoke(from, value);
     }
 
     [ServerRpc(RequireOwnership = false)]

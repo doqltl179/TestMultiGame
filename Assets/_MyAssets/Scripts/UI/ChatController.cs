@@ -60,6 +60,8 @@ public class ChatController : MonoBehaviour {
         chat.transform.SetParent(textParent);
         chat.gameObject.SetActive(true);
 
+        chat.transform.localScale = Vector3.one;
+
         chat.Text = $"{name} : {message}";
     }
     #endregion

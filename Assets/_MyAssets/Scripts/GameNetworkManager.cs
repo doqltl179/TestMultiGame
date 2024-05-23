@@ -2,16 +2,36 @@ using Mu3Library.Utility;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using Steamworks.Data;
-using Steamworks.ServerList;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameNetworkManager : GenericSingleton<GameNetworkManager> {
+public class GameNetworkManager : MonoBehaviour {
+    public static GameNetworkManager Instance {
+        get {
+            if(instance == null) {
+                GameNetworkManager pm = FindObjectOfType<GameNetworkManager>();
+                if(pm == null) {
+                    GameObject resource = ResourceLoader.GetResource<GameObject>($"Network/{nameof(GameNetworkManager)}");
+                    if(resource != null) {
+                        GameObject go = Instantiate(resource);
+                        DontDestroyOnLoad(go);
+
+                        pm = go.GetComponent<GameNetworkManager>();
+                    }
+                }
+
+                instance = pm;
+            }
+
+            return instance;
+        }
+    }
+    private static GameNetworkManager instance;
+
     private FacepunchTransport transport;
 
     public Lobby? CurrentLobby { get; private set; } = null;
@@ -32,6 +52,8 @@ public class GameNetworkManager : GenericSingleton<GameNetworkManager> {
         SteamMatchmaking.OnChatMessage += OnChatMessage;
 
         SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
+
+        NetworkTransmission.Instance.OnClickReady += OnClickReady;
     }
 
     private void OnDestroy() {
@@ -46,6 +68,8 @@ public class GameNetworkManager : GenericSingleton<GameNetworkManager> {
 
         SteamFriends.OnGameLobbyJoinRequested -= OnGameLobbyJoinRequested;
 
+        NetworkTransmission.Instance.OnClickReady -= OnClickReady;
+
         if(NetworkManager.Singleton == null) {
             return;
         }
@@ -59,24 +83,14 @@ public class GameNetworkManager : GenericSingleton<GameNetworkManager> {
         Disconnect();
     }
 
+    private void Start() {
+        
+    }
+
     #region Utility
     public void Init() {
         if(transport == null) {
-            transport = FindObjectOfType<FacepunchTransport>();
-            if(transport == null) {
-                FacepunchTransport t = gameObject.AddComponent<FacepunchTransport>();
-
-                transport = t;
-            }
-        }
-
-        if(NetworkManager.Singleton == null) {
-            NetworkManager networkManager = gameObject.AddComponent<NetworkManager>();
-
-            NetworkConfig config = new NetworkConfig();
-            config.NetworkTransport = transport;
-
-            networkManager.NetworkConfig = config;
+            transport = GetComponent<FacepunchTransport>();
         }
     }
 
@@ -134,6 +148,23 @@ public class GameNetworkManager : GenericSingleton<GameNetworkManager> {
             Debug.LogError("Not exist in members myself.");
 
             return;
+        }
+    }
+
+    public void Invite(ulong id) {
+        if(CurrentLobby == null) return;
+
+        Friend? friend = CurrentLobby.Value.Members.Where(t => t.Id == id).FirstOrDefault();
+        if(friend != null) {
+            if(CurrentLobby.Value.InviteFriend(id)) {
+                Debug.Log($"Invite successed. id: {id}");
+            }
+            else {
+                Debug.LogError($"Invite failed. id: {id}");
+            }
+        }
+        else {
+            Debug.Log($"ID not found. id: {id}");
         }
     }
     #endregion
@@ -259,6 +290,16 @@ public class GameNetworkManager : GenericSingleton<GameNetworkManager> {
             IsReady = false });
 
         Debug.Log($"Lobby created. owner: {lobby.Owner.Name}");
+    }
+
+    private void OnClickReady(ulong id, bool value) {
+        MemberInfo info = null;
+        if(memberInfos.TryGetValue(id, out info)) {
+            memberInfos[id].IsReady = value;
+        }
+        else {
+            Debug.LogError($"Member not found. id: {id}");
+        }
     }
     #endregion
 

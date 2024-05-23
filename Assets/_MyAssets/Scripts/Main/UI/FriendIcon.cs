@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -5,6 +6,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class FriendIcon : MonoBehaviour {
+    public ulong ID { get; private set; }
+
+    [SerializeField] private Button button;
+    public bool UseButton {
+        get => button.enabled;
+        set {
+            button.transition = value ? Selectable.Transition.ColorTint : Selectable.Transition.None;
+
+            button.enabled = value;
+        }
+    }
+    public Action OnClick;
+
     [SerializeField] private Image icon;
     [SerializeField] private TextMeshProUGUI nameText;
 
@@ -15,14 +29,22 @@ public class FriendIcon : MonoBehaviour {
         set => readyObj.SetActive(value);
     }
 
-    public ulong ID = 0;
-
 
 
     #region Utility
-    public void SetIcon(Sprite image, string name) {
+    public void SetIcon(ulong id, Sprite image, string name) {
+        ID = id;
+
         icon.sprite = image;
         nameText.text = name;
+    }
+
+    public void RemoveAllButtonAction() => OnClick = null;
+    #endregion
+
+    #region Action
+    public void OnClickButton() {
+        OnClick?.Invoke();
     }
     #endregion
 }
