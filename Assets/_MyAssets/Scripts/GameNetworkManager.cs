@@ -1,3 +1,4 @@
+using Mu3Library;
 using Mu3Library.Utility;
 using Netcode.Transports.Facepunch;
 using Steamworks;
@@ -77,6 +78,8 @@ public class GameNetworkManager : MonoBehaviour {
         NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
+
+        NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
     }
 
     private void OnApplicationQuit() {
@@ -95,22 +98,46 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     public async void StartHost(int maxMembers, Action<bool> callback = null) {
+        NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
+
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnServerStopped += OnServerStopped;
         NetworkManager.Singleton.StartHost();
         CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
 
+        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
+
         callback?.Invoke(CurrentLobby != null);
     }
 
-    public void StartClient(SteamId steamId) {
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
-        transport.targetSteamId = steamId;
-        if(NetworkManager.Singleton.StartClient()) {
-            Debug.Log("Client has started.");
-        }
+    private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response) {
+        Debug.Log($"ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
     }
+
+    public async void StartServer(int maxMembers, Action<bool> callback = null) {
+        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+        NetworkManager.Singleton.OnServerStopped += OnServerStopped;
+        NetworkManager.Singleton.StartServer();
+        CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
+
+        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
+
+        callback?.Invoke(CurrentLobby != null);
+    }
+
+    //public void StartClient(SteamId steamId, Action<bool> callback = null) {
+    //    NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
+    //    NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
+    //    transport.targetSteamId = steamId;
+    //    if(NetworkManager.Singleton.StartClient()) {
+    //        Debug.Log("Client has started.");
+
+    //        callback?.Invoke(true);
+    //    }
+    //    else {
+    //        callback?.Invoke(false);
+    //    }
+    //}
 
     public void Disconnect(Action callback = null) {
         CurrentLobby?.Leave();
@@ -167,6 +194,12 @@ public class GameNetworkManager : MonoBehaviour {
             Debug.Log($"ID not found. id: {id}");
         }
     }
+
+    public void UpdateLobbyData(string key, string value) {
+        if(CurrentLobby == null) return;
+
+        CurrentLobby.Value.SetData(key, value);
+    }
     #endregion
 
     #region Action
@@ -194,7 +227,20 @@ public class GameNetworkManager : MonoBehaviour {
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
 
         if(clientId == 0) {
-            Disconnect();
+            Disconnect(() => {
+                if(SceneLoader.Instance.CurrentLoadedScene != SceneType.Main) {
+                    SceneLoader.Instance.LoadScene(
+                        SceneType.Main,
+                        () => {
+                            LoadingPanel.Instance.SetActive(true, 0.5f);
+                            LoadingPanel.Instance.UpdateProgress();
+                        },
+                        () => {
+                            LoadingPanel.Instance.SetActive(false, 0.5f);
+                            LoadingPanel.Instance.StopProgressUpdate();
+                        });
+                }
+            });
         }
     }
 
@@ -222,6 +268,8 @@ public class GameNetworkManager : MonoBehaviour {
         }
 
         CurrentLobby = lobby;
+        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
+
         Debug.Log("Joined lobby.");
     }
 
@@ -268,7 +316,49 @@ public class GameNetworkManager : MonoBehaviour {
             return;
         }
 
-        StartClient(CurrentLobby.Value.Owner.Id);
+        Debug.Log($"OnLobbyEntered. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
+
+        CurrentLobby = lobby;
+        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
+
+        memberInfos.Clear();
+        foreach(Friend friend in lobby.Members) {
+            memberInfos.Add(friend.Id, new MemberInfo() {
+                IsMe = friend.IsMe,
+                ID = friend.Id,
+                Name = friend.Name,
+                IsReady = false
+            });
+        }
+
+        SceneLoader.Instance.LoadScene(
+            SceneType.Lobby,
+            () => {
+                LoadingPanel.Instance.SetActive(true, 0.5f);
+                LoadingPanel.Instance.UpdateProgress();
+            },
+            () => {
+                LoadingPanel.Instance.SetActive(false, 0.5f);
+                LoadingPanel.Instance.StopProgressUpdate();
+            });
+
+        //StartClient(lobby.Owner.Id, (value) => {
+        //    if(value) {
+        //        SceneLoader.Instance.LoadScene(
+        //            SceneType.Lobby,
+        //            () => {
+        //                LoadingPanel.Instance.SetActive(true, 0.5f);
+        //                LoadingPanel.Instance.UpdateProgress();
+        //            },
+        //            () => {
+        //                LoadingPanel.Instance.SetActive(false, 0.5f);
+        //                LoadingPanel.Instance.StopProgressUpdate();
+        //            });
+        //    }
+        //    else {
+        //        Debug.Log("Failed create lobby.");
+        //    }
+        //});
     }
 
     private void OnLobbyCreated(Result result, Lobby lobby) {

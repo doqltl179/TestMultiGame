@@ -41,6 +41,12 @@ public class LobbyUI : MonoBehaviour {
 
     private void Start() {
         invitePopObject.SetActive(false);
+
+        if(GameNetworkManager.Instance.CurrentLobby != null) {
+            foreach(Friend friend in GameNetworkManager.Instance.CurrentLobby.Value.Members) {
+                AddLobbyFriendIcon(friend);
+            }
+        }
     }
 
     private async void AddInviteFriendIcon(Friend friendId) {
@@ -197,7 +203,7 @@ public class LobbyUI : MonoBehaviour {
     }
 
     private void OnLobbyMemberJoined(Lobby lobby, Friend friendId) {
-        Debug.Log($"[{friendId.Name}] joined.");
+        //Debug.Log($"[{friendId.Name}] joined.");
 
         AddLobbyFriendIcon(friendId);
     }

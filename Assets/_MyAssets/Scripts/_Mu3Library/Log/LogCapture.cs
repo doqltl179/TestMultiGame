@@ -39,6 +39,10 @@ namespace Mu3Library.Log {
             Application.logMessageReceived -= LogMessageReceived;
         }
 
+        private void Start() {
+            logCountText.text = "";
+        }
+
         #region Utility
         public void ClearLog() {
             for(int i = 0; i < logs.Count; i++) {
