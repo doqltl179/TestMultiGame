@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -51,7 +52,7 @@ public class GameNetworkManager : MonoBehaviour {
         SteamMatchmaking.OnLobbyGameCreated += OnLobbyGameCreated;
 
         SteamMatchmaking.OnChatMessage += OnChatMessage;
-
+        
         SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
 
         NetworkTransmission.Instance.OnClickReady += OnClickReady;
@@ -104,6 +105,8 @@ public class GameNetworkManager : MonoBehaviour {
         NetworkManager.Singleton.OnServerStopped += OnServerStopped;
         NetworkManager.Singleton.StartHost();
         CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
+        CurrentLobby?.SetPublic();
+        CurrentLobby?.SetJoinable(true);
 
         UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
@@ -125,19 +128,19 @@ public class GameNetworkManager : MonoBehaviour {
         callback?.Invoke(CurrentLobby != null);
     }
 
-    //public void StartClient(SteamId steamId, Action<bool> callback = null) {
-    //    NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
-    //    NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
-    //    transport.targetSteamId = steamId;
-    //    if(NetworkManager.Singleton.StartClient()) {
-    //        Debug.Log("Client has started.");
+    public void StartClient(SteamId steamId, Action<bool> callback = null) {
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
+        transport.targetSteamId = steamId;
+        if(NetworkManager.Singleton.StartClient()) {
+            Debug.Log("Client has started.");
 
-    //        callback?.Invoke(true);
-    //    }
-    //    else {
-    //        callback?.Invoke(false);
-    //    }
-    //}
+            callback?.Invoke(true);
+        }
+        else {
+            callback?.Invoke(false);
+        }
+    }
 
     public void Disconnect(Action callback = null) {
         CurrentLobby?.Leave();
@@ -149,6 +152,10 @@ public class GameNetworkManager : MonoBehaviour {
         if(NetworkManager.Singleton.IsHost) {
             NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
             //NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
+
+            NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
+
+            NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
         }
         else {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
@@ -275,6 +282,9 @@ public class GameNetworkManager : MonoBehaviour {
 
     private void OnLobbyGameCreated(Lobby lobby, uint ip, ushort port, SteamId steamId) {
         Debug.Log($"Lobby was created. ip: {ip}, port: {port}, name: {steamId}");
+
+        lobby.SetData("ip", ip.ToString());
+        lobby.SetData("port", port.ToString());
     }
 
     // Friend send you an steam invite
@@ -331,34 +341,44 @@ public class GameNetworkManager : MonoBehaviour {
             });
         }
 
-        SceneLoader.Instance.LoadScene(
-            SceneType.Lobby,
-            () => {
-                LoadingPanel.Instance.SetActive(true, 0.5f);
-                LoadingPanel.Instance.UpdateProgress();
-            },
-            () => {
-                LoadingPanel.Instance.SetActive(false, 0.5f);
-                LoadingPanel.Instance.StopProgressUpdate();
-            });
+        //SceneLoader.Instance.LoadScene(
+        //    SceneType.Lobby,
+        //    () => {
+        //        LoadingPanel.Instance.SetActive(true, 0.5f);
+        //        LoadingPanel.Instance.UpdateProgress();
+        //    },
+        //    () => {
+        //        LoadingPanel.Instance.SetActive(false, 0.5f);
+        //        LoadingPanel.Instance.StopProgressUpdate();
+        //    });
 
-        //StartClient(lobby.Owner.Id, (value) => {
-        //    if(value) {
-        //        SceneLoader.Instance.LoadScene(
-        //            SceneType.Lobby,
-        //            () => {
-        //                LoadingPanel.Instance.SetActive(true, 0.5f);
-        //                LoadingPanel.Instance.UpdateProgress();
-        //            },
-        //            () => {
-        //                LoadingPanel.Instance.SetActive(false, 0.5f);
-        //                LoadingPanel.Instance.StopProgressUpdate();
-        //            });
-        //    }
-        //    else {
-        //        Debug.Log("Failed create lobby.");
-        //    }
-        //});
+        //string ipString = lobby.GetData("ip");
+        //uint? ip = null;
+        //try {
+        //    uint parse = uint.Parse(ipString);
+        //    ip = parse;
+        //}
+        //catch(Exception ex) {
+        //    Debug.LogError(ex.ToString());
+        //}
+        //StartClient(ip == null ? 0 : ip.Value, (value) => {
+        StartClient(lobby.Id, (value) => { 
+            if(value) {
+                SceneLoader.Instance.LoadScene(
+                    SceneType.Lobby,
+                    () => {
+                        LoadingPanel.Instance.SetActive(true, 0.5f);
+                        LoadingPanel.Instance.UpdateProgress();
+                    },
+                    () => {
+                        LoadingPanel.Instance.SetActive(false, 0.5f);
+                        LoadingPanel.Instance.StopProgressUpdate();
+                    });
+            }
+            else {
+                Debug.Log("Failed create lobby.");
+            }
+        });
     }
 
     private void OnLobbyCreated(Result result, Lobby lobby) {
@@ -379,7 +399,31 @@ public class GameNetworkManager : MonoBehaviour {
             Name = lobby.Owner.Name,
             IsReady = false });
 
+        NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+
         Debug.Log($"Lobby created. owner: {lobby.Owner.Name}");
+    }
+
+    private void OnConnectionEvent(NetworkManager manager, ConnectionEventData eventData) {
+        Debug.Log($"OnConnectionEvent. EventType: {eventData.EventType}, ClientId: {eventData.ClientId}");
+        switch(eventData.EventType) {
+            case ConnectionEvent.ClientConnected: {
+
+                }
+                break;
+            case ConnectionEvent.ClientDisconnected: {
+
+                }
+                break;
+            case ConnectionEvent.PeerConnected: {
+
+                }
+                break;
+            case ConnectionEvent.PeerDisconnected: {
+
+                }
+                break;
+        }
     }
 
     private void OnClickReady(ulong id, bool value) {

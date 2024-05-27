@@ -4,6 +4,7 @@ using Steamworks;
 using Steamworks.Data;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class MainUI : MonoBehaviour {
@@ -42,9 +43,11 @@ public class MainUI : MonoBehaviour {
 
                 Lobby lobby = lobbies[i];
                 icon.SetIcon(lobby, () => {
+                    StringBuilder sb = new StringBuilder();
                     foreach(var item in lobby.Data) {
-                        Debug.Log($"Key: {item.Key}, Value: {item.Value}");
+                        sb.AppendLine($"Key: {item.Key} || Value: {item.Value}");
                     }
+                    Debug.Log(sb.Length > 0 ? sb.ToString() : "Data not exist.");
                     Network_Join(lobby);
                 });
 
@@ -54,14 +57,19 @@ public class MainUI : MonoBehaviour {
     }
 
     private async void Network_Join(Lobby lobby) {
-        RoomEnter enter = await lobby.Join();
-        if(enter != RoomEnter.Success) {
-            Debug.Log($"Room join failed. Result: {enter}, LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
+        //RoomEnter enter = await lobby.Join();
+        //if(enter != RoomEnter.Success) {
+        //    Debug.Log($"Room join failed. Result: {enter}, LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
 
-            return;
+        //    return;
+        //}
+
+        //Debug.Log($"Room join success. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
+
+        Lobby? l = await SteamMatchmaking.JoinLobbyAsync(lobby.Id);
+        if(l != null) {
+            Debug.Log($"Room join success. LobbyID: {l.Value.Id}, OwnerName: {l.Value.Owner.Name}, OwnerID: {l.Value.Owner.Id}");
         }
-
-        Debug.Log($"Room join success. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
     }
 
     #region Action
