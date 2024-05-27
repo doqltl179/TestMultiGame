@@ -16,13 +16,14 @@ public class NetworkTransmission : NetworkBehaviour {
             if(instance == null) {
                 NetworkTransmission pm = FindObjectOfType<NetworkTransmission>();
                 if(pm == null) {
-                    GameObject resource = ResourceLoader.GetResource<GameObject>($"Network/{nameof(NetworkTransmission)}");
-                    if(resource != null) {
-                        GameObject go = Instantiate(resource);
-                        DontDestroyOnLoad(go);
+                    //GameObject resource = ResourceLoader.GetResource<GameObject>($"Network/{nameof(NetworkTransmission)}");
+                    //if(resource != null) {
+                    //    GameObject go = Instantiate(resource);
+                    //    DontDestroyOnLoad(go);
 
-                        pm = go.GetComponent<NetworkTransmission>();
-                    }
+                    //    pm = go.GetComponent<NetworkTransmission>();
+                    //}
+                    Debug.LogError($"Component not found. name: {nameof(NetworkTransmission)}");
                 }
 
                 instance = pm;
@@ -36,6 +37,12 @@ public class NetworkTransmission : NetworkBehaviour {
     public Action<ulong, bool> OnClickReady;
 
 
+
+    public override void OnDestroy() {
+        base.OnDestroy();
+
+        instance = null;
+    }
 
     [ServerRpc(RequireOwnership = false)]
     public void Ready_ServerRpc(ulong from, bool value) {

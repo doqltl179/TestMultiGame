@@ -1,3 +1,4 @@
+using Steamworks;
 using Steamworks.Data;
 using System;
 using System.Collections;
@@ -15,8 +16,17 @@ public class LobbyIcon : MonoBehaviour {
 
     #region Utility
     public void SetIcon(Lobby lobby, Action callback = null) {
-        lobbyText.text = $"{lobby.Owner.Name}'s Lobby ({lobby.Id})";
-        lobbyMemberText.text = $"({lobby.MemberCount} / {lobby.MaxMembers})";
+        uint ip = 0;
+        ushort port = 0;
+        SteamId id = new SteamId();
+        if(lobby.GetGameServer(ref ip, ref port, ref id)) {
+            lobbyText.text = $"{lobby.Owner.Name}'s Lobby ({lobby.Id}) || ip: {ip}, port: {port}, id: {id}";
+            lobbyMemberText.text = $"({lobby.MemberCount} / {lobby.MaxMembers})";
+        }
+        else {
+            lobbyText.text = $"{lobby.Owner.Name}'s Lobby ({lobby.Id})";
+            lobbyMemberText.text = $"({lobby.MemberCount} / {lobby.MaxMembers})";
+        }
 
         OnClickButton = callback;
     }

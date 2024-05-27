@@ -54,8 +54,6 @@ public class GameNetworkManager : MonoBehaviour {
         SteamMatchmaking.OnChatMessage += OnChatMessage;
         
         SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
-
-        NetworkTransmission.Instance.OnClickReady += OnClickReady;
     }
 
     private void OnDestroy() {
@@ -69,8 +67,6 @@ public class GameNetworkManager : MonoBehaviour {
         SteamMatchmaking.OnChatMessage -= OnChatMessage;
 
         SteamFriends.OnGameLobbyJoinRequested -= OnGameLobbyJoinRequested;
-
-        NetworkTransmission.Instance.OnClickReady -= OnClickReady;
 
         if(NetworkManager.Singleton == null) {
             return;
@@ -131,6 +127,7 @@ public class GameNetworkManager : MonoBehaviour {
     public void StartClient(SteamId steamId, Action<bool> callback = null) {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
+        transport.Initialize(NetworkManager.Singleton);
         transport.targetSteamId = steamId;
         if(NetworkManager.Singleton.StartClient()) {
             Debug.Log("Client has started.");
@@ -171,20 +168,6 @@ public class GameNetworkManager : MonoBehaviour {
         CurrentLobby?.SendChatString(message);
     }
 
-    public void Ready() {
-        if(CurrentLobby == null) return;
-
-        MemberInfo info = memberInfos.Where(t => t.Value.IsMe).FirstOrDefault().Value;
-        if(info != null) {
-            NetworkTransmission.Instance.Ready_ServerRpc(info.ID, !info.IsReady);
-        }
-        else {
-            Debug.LogError("Not exist in members myself.");
-
-            return;
-        }
-    }
-
     public void Invite(ulong id) {
         if(CurrentLobby == null) return;
 
@@ -206,6 +189,22 @@ public class GameNetworkManager : MonoBehaviour {
         if(CurrentLobby == null) return;
 
         CurrentLobby.Value.SetData(key, value);
+    }
+
+    public bool GetReady() {
+        return GetReady(NetworkManager.Singleton.LocalClientId);
+    }
+
+    public bool GetReady(ulong id) {
+        MemberInfo info = null;
+        if(memberInfos.TryGetValue(id, out info)) {
+
+        }
+        else {
+            Debug.LogError($"Member not found. id: {id}");
+        }
+
+        return info != null ? info.IsReady : false;
     }
     #endregion
 
@@ -256,13 +255,13 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void OnServerStopped(bool obj) {
-        Debug.Log($"Host Stoped. value: {obj}");
+        Debug.Log($"OnServerStopped. Host Stoped. value: {obj}");
 
         NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
     }
 
     private void OnServerStarted() {
-        Debug.Log("Host Started.");
+        Debug.Log("OnServerStarted. Host Started.");
     }
 
     // When you accept the invite for join on a friend.
@@ -423,16 +422,6 @@ public class GameNetworkManager : MonoBehaviour {
 
                 }
                 break;
-        }
-    }
-
-    private void OnClickReady(ulong id, bool value) {
-        MemberInfo info = null;
-        if(memberInfos.TryGetValue(id, out info)) {
-            memberInfos[id].IsReady = value;
-        }
-        else {
-            Debug.LogError($"Member not found. id: {id}");
         }
     }
     #endregion

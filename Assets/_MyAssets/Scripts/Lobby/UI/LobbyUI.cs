@@ -29,14 +29,18 @@ public class LobbyUI : MonoBehaviour {
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
 
-        NetworkTransmission.Instance.OnClickReady += OnClickReady;
+        if(NetworkTransmission.Instance != null) {
+            NetworkTransmission.Instance.OnClickReady += OnClickReady;
+        }
     }
 
     private void OnDestroy() {
         SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
 
-        NetworkTransmission.Instance.OnClickReady -= OnClickReady;
+        if(NetworkTransmission.Instance != null) {
+            NetworkTransmission.Instance.OnClickReady -= OnClickReady;
+        }
     }
 
     private void Start() {
@@ -145,7 +149,8 @@ public class LobbyUI : MonoBehaviour {
 
     #region Action
     public void OnClickReady() {
-        GameNetworkManager.Instance.Ready();
+        bool ready = !GameNetworkManager.Instance.GetReady();
+        NetworkTransmission.Instance.Ready_ServerRpc(NetworkManager.Singleton.LocalClientId, ready);
     }
 
     private void OnClickReady(ulong id, bool value) {
