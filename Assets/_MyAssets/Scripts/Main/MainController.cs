@@ -18,7 +18,5 @@ public class MainController : MonoBehaviour {
         Time.fixedDeltaTime = 1.0f / Application.targetFrameRate;
 
         CameraManager.Instance.InitCamera();
-
-        GameNetworkManager.Instance.Init();
     }
 }

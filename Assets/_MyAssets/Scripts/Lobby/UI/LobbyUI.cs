@@ -10,6 +10,9 @@ using Unity.Netcode;
 using UnityEngine;
 
 public class LobbyUI : MonoBehaviour {
+    [SerializeField] private NetworkTransmission networkTransmission;
+
+    [Space(20)]
     [SerializeField] private FriendIcon friendIconObj;
 
     [Space(20)]
@@ -29,18 +32,14 @@ public class LobbyUI : MonoBehaviour {
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
 
-        if(NetworkTransmission.Instance != null) {
-            NetworkTransmission.Instance.OnClickReady += OnClickReady;
-        }
+        networkTransmission.OnClickReady += OnClickReady;
     }
 
     private void OnDestroy() {
         SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
 
-        if(NetworkTransmission.Instance != null) {
-            NetworkTransmission.Instance.OnClickReady -= OnClickReady;
-        }
+        networkTransmission.OnClickReady -= OnClickReady;
     }
 
     private void Start() {
@@ -152,7 +151,7 @@ public class LobbyUI : MonoBehaviour {
     #region Action
     public void OnClickReady() {
         bool ready = !GameNetworkManager.Instance.GetReady();
-        NetworkTransmission.Instance.Ready_ServerRpc(NetworkManager.Singleton.LocalClientId, ready);
+        networkTransmission.Ready_ServerRpc(NetworkManager.Singleton.LocalClientId, ready);
     }
 
     private void OnClickReady(ulong id, bool value) {
@@ -185,11 +184,11 @@ public class LobbyUI : MonoBehaviour {
     public void Disconnect() {
         GameNetworkManager.Instance.Disconnect(() => {
             SceneLoader.Instance.LoadScene(
-                SceneType.Main, 
+                SceneType.Main,
                 () => {
                     LoadingPanel.Instance.SetActive(true, 0.5f);
                     LoadingPanel.Instance.UpdateProgress();
-                }, 
+                },
                 () => {
                     LoadingPanel.Instance.SetActive(false, 0.5f);
                     LoadingPanel.Instance.StopProgressUpdate();

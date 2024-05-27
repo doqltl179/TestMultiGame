@@ -11,38 +11,9 @@ using UnityEngine;
 // ClientRpc => Server에서 호출하며 Client에서 실행.
 //-------------------------------------------------------------------------------
 public class NetworkTransmission : NetworkBehaviour {
-    public static NetworkTransmission Instance {
-        get {
-            if(instance == null) {
-                NetworkTransmission pm = FindObjectOfType<NetworkTransmission>();
-                if(pm == null) {
-                    //GameObject resource = ResourceLoader.GetResource<GameObject>($"Network/{nameof(NetworkTransmission)}");
-                    //if(resource != null) {
-                    //    GameObject go = Instantiate(resource);
-                    //    DontDestroyOnLoad(go);
-
-                    //    pm = go.GetComponent<NetworkTransmission>();
-                    //}
-                    Debug.LogError($"Component not found. name: {nameof(NetworkTransmission)}");
-                }
-
-                instance = pm;
-            }
-
-            return instance;
-        }
-    }
-    private static NetworkTransmission instance;
-
     public Action<ulong, bool> OnClickReady;
 
 
-
-    public override void OnDestroy() {
-        base.OnDestroy();
-
-        instance = null;
-    }
 
     [ServerRpc(RequireOwnership = false)]
     public void Ready_ServerRpc(ulong from, bool value) {
