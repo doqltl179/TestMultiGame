@@ -127,7 +127,7 @@ public class GameNetworkManager : MonoBehaviour {
     public void StartClient(SteamId steamId, Action<bool> callback = null) {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
-        transport.Initialize(NetworkManager.Singleton);
+        //transport.Initialize(NetworkManager.Singleton);
         transport.targetSteamId = steamId;
         if(NetworkManager.Singleton.StartClient()) {
             Debug.Log("Client has started.");
