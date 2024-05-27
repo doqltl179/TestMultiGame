@@ -38,7 +38,7 @@ public class LobbyUI : MonoBehaviour {
         SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
 
-        networkTransmission.OnClickReady -= OnClickReady;
+        if(networkTransmission != null) networkTransmission.OnClickReady -= OnClickReady;
     }
 
     private IEnumerator Start() {
@@ -56,12 +56,24 @@ public class LobbyUI : MonoBehaviour {
                 networkTransmission = go.GetComponent<NetworkTransmission>();
             }
             else {
-                while(networkTransmission == null) {
+                WaitForSeconds wait = new WaitForSeconds(1.0f);
+                const int maxCount = 10;
+                int count = 0;
+                while(count < maxCount) {
                     networkTransmission = FindObjectOfType<NetworkTransmission>();
+                    if(networkTransmission != null) break;
 
-                    Debug.Log("Frame Check for Find Component.");
+                    count++;
 
-                    yield return null;
+                    yield return wait;
+                }
+
+                if(networkTransmission == null) {
+                    Debug.Log($"[{nameof(NetworkTransmission)}] not found.");
+
+                    Disconnect();
+
+                    yield break;
                 }
             }
         }

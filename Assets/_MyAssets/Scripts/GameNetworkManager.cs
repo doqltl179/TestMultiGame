@@ -12,8 +12,26 @@ using Unity.Netcode;
 using UnityEngine;
 
 public class GameNetworkManager : MonoBehaviour {
-    public bool IsInitialized { get; private set; }
-    public static GameNetworkManager Instance { get; private set; }
+    public static GameNetworkManager Instance {
+        get {
+            if(instance == null) {
+                instance = FindObjectOfType<GameNetworkManager>();
+                if(instance == null) {
+                    GameObject obj = ResourceLoader.GetResource<GameObject>($"Network/{nameof(GameNetworkManager)}");
+                    if(obj != null) {
+                        GameObject go = Instantiate(obj);
+
+                        DontDestroyOnLoad(go);
+
+                        instance = go.GetComponent<GameNetworkManager>();
+                    }
+                }
+            }
+
+            return instance;
+        }
+    }
+    private static GameNetworkManager instance = null;
 
     [SerializeField] private FacepunchTransport transport;
 
@@ -42,19 +60,6 @@ public class GameNetworkManager : MonoBehaviour {
 
 
     private void Awake() {
-        if(!IsInitialized) {
-            Instance = GetComponent<GameNetworkManager>();
-
-            DontDestroyOnLoad(gameObject);
-
-            IsInitialized = true;
-        }
-        else {
-            Destroy(gameObject);
-
-            return;
-        }
-
         SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
         SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
@@ -68,8 +73,6 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void OnDestroy() {
-        if(!IsInitialized) return;
-
         SteamMatchmaking.OnLobbyCreated -= OnLobbyCreated;
         SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
         SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
@@ -93,8 +96,6 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void OnApplicationQuit() {
-        if(!IsInitialized) return;
-
         Disconnect();
     }
 
@@ -103,6 +104,10 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     #region Utility
+    public void Init() {
+
+    }
+
     public async void StartHost(int maxMembers, Action<bool> callback = null) {
         NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
 

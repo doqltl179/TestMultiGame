@@ -9,6 +9,8 @@ public class MainController : MonoBehaviour {
 
 
     private void Awake() {
+        GameNetworkManager.Instance.Init();
+
         KeyCodeInputCollector.Instance.InitCollectKeys();
     }
 
