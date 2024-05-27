@@ -44,10 +44,11 @@ public class MainUI : MonoBehaviour {
                 Lobby lobby = lobbies[i];
                 icon.SetIcon(lobby, () => {
                     StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("_____ Lobby Datas _____");
                     foreach(var item in lobby.Data) {
                         sb.AppendLine($"Key: {item.Key} || Value: {item.Value}");
                     }
-                    Debug.Log(sb.Length > 0 ? sb.ToString() : "Data not exist.");
+                    Debug.Log(sb.Length > 1 ? sb.ToString() : "Data not exist.");
                     Network_Join(lobby);
                 });
 
@@ -93,25 +94,25 @@ public class MainUI : MonoBehaviour {
         });
     }
 
-    public void Network_Server(int maxMembers) {
-        GameNetworkManager.Instance.StartServer(maxMembers, (value) => {
-            if(value) {
-                SceneLoader.Instance.LoadScene(
-                    SceneType.Lobby,
-                    () => {
-                        LoadingPanel.Instance.SetActive(true, 0.5f);
-                        LoadingPanel.Instance.UpdateProgress();
-                    },
-                    () => {
-                        LoadingPanel.Instance.SetActive(false, 0.5f);
-                        LoadingPanel.Instance.StopProgressUpdate();
-                    });
-            }
-            else {
-                Debug.Log("Failed create lobby.");
-            }
-        });
-    }
+    //public void Network_Server(int maxMembers) {
+    //    GameNetworkManager.Instance.StartServer(maxMembers, (value) => {
+    //        if(value) {
+    //            SceneLoader.Instance.LoadScene(
+    //                SceneType.Lobby,
+    //                () => {
+    //                    LoadingPanel.Instance.SetActive(true, 0.5f);
+    //                    LoadingPanel.Instance.UpdateProgress();
+    //                },
+    //                () => {
+    //                    LoadingPanel.Instance.SetActive(false, 0.5f);
+    //                    LoadingPanel.Instance.StopProgressUpdate();
+    //                });
+    //        }
+    //        else {
+    //            Debug.Log("Failed create lobby.");
+    //        }
+    //    });
+    //}
 
     public void Refresh() {
         LoadAllLobby();

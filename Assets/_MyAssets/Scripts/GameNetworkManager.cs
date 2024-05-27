@@ -109,35 +109,44 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     public async void StartHost(int maxMembers, Action<bool> callback = null) {
+        NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
         NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
+        NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
 
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnServerStopped += OnServerStopped;
         NetworkManager.Singleton.StartHost();
         CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
-        CurrentLobby?.SetPublic();
-        CurrentLobby?.SetJoinable(true);
-        CurrentLobby?.SetGameServer(CurrentLobby.Value.Owner.Id);
+        if(CurrentLobby != null) {
+            //CurrentLobby.Value.SetPublic();
+            //CurrentLobby.Value.SetJoinable(true);
+            //CurrentLobby.Value.SetGameServer(CurrentLobby.Value.Owner.Id);
 
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
-
-        callback?.Invoke(CurrentLobby != null);
+            callback?.Invoke(true);
+        }
+        else {
+            callback?.Invoke(false);
+        }
     }
 
     private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response) {
-        Debug.Log($"ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
+        if(request.ClientNetworkId == 0) {
+            Debug.Log($"Reject Connection. clientId: {request.ClientNetworkId}");
+
+            return;
+        }
+
+        Debug.Log($"ConnectionApprovalCallback. ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
     }
 
-    public async void StartServer(int maxMembers, Action<bool> callback = null) {
-        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-        NetworkManager.Singleton.OnServerStopped += OnServerStopped;
-        NetworkManager.Singleton.StartServer();
-        CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
+    //public async void StartServer(int maxMembers, Action<bool> callback = null) {
+    //    NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+    //    NetworkManager.Singleton.OnServerStopped += OnServerStopped;
+    //    NetworkManager.Singleton.StartServer();
+    //    CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
 
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
-
-        callback?.Invoke(CurrentLobby != null);
-    }
+    //    callback?.Invoke(CurrentLobby != null);
+    //}
 
     public void StartClient(SteamId steamId, Action<bool> callback = null) {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
@@ -166,6 +175,7 @@ public class GameNetworkManager : MonoBehaviour {
             //NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
 
             NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
+            NetworkManager.Singleton.NetworkConfig.ConnectionApproval = false;
 
             NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
         }
@@ -198,12 +208,6 @@ public class GameNetworkManager : MonoBehaviour {
         else {
             Debug.Log($"ID not found. id: {id}");
         }
-    }
-
-    public void UpdateLobbyData(string key, string value) {
-        if(CurrentLobby == null) return;
-
-        CurrentLobby.Value.SetData(key, value);
     }
 
     public bool GetReady() {
@@ -302,16 +306,21 @@ public class GameNetworkManager : MonoBehaviour {
         }
 
         CurrentLobby = lobby;
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
         Debug.Log("Joined lobby.");
     }
 
     private void OnLobbyGameCreated(Lobby lobby, uint ip, ushort port, SteamId steamId) {
-        Debug.Log($"Lobby was created. ip: {ip}, port: {port}, name: {steamId}");
+        lobby.SetData(LobbyData.key_ip, ip.ToString());
+        lobby.SetData(LobbyData.key_port, port.ToString());
+        lobby.SetData(LobbyData.key_ownerName, lobby.Owner.Name);
 
-        lobby.SetData("ip", ip.ToString());
-        lobby.SetData("port", port.ToString());
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("_____ Lobby Datas _____");
+        foreach(var item in lobby.Data) {
+            sb.AppendLine($"Key: {item.Key} || Value: {item.Value}");
+        }
+        Debug.Log(sb.Length > 1 ? sb.ToString() : "Data not exist.");
     }
 
     // Friend send you an steam invite
@@ -356,7 +365,6 @@ public class GameNetworkManager : MonoBehaviour {
         Debug.Log($"OnLobbyEntered. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
 
         CurrentLobby = lobby;
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
         memberInfos.Clear();
         foreach(Friend friend in lobby.Members) {
@@ -426,8 +434,6 @@ public class GameNetworkManager : MonoBehaviour {
             ID = lobby.Owner.Id, 
             Name = lobby.Owner.Name,
             IsReady = false });
-
-        NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
 
         Debug.Log($"Lobby created. owner: {lobby.Owner.Name}");
     }
