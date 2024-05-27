@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6509718550558662968}
   - component: {fileID: 2630158917594223372}
   - component: {fileID: 5901946073048489867}
-  - component: {fileID: 6532725364072485041}
+  - component: {fileID: 3832559671251922646}
   m_Layer: 0
   m_Name: GameNetworkManager
   m_TagString: Untagged
@@ -60,7 +60,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NetworkConfig:
     ProtocolVersion: 0
-    NetworkTransport: {fileID: 6532725364072485041}
+    NetworkTransport: {fileID: 3832559671251922646}
     PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
@@ -83,7 +83,7 @@ MonoBehaviour:
     OldPrefabList: []
   RunInBackground: 1
   LogLevel: 0
---- !u!114 &6532725364072485041
+--- !u!114 &3832559671251922646
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -92,7 +92,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2811453540629493168}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44dd247a00edbfa44b77868d755af6ea, type: 3}
+  m_Script: {fileID: 11500000, guid: eeea77d16973c1c44b305c58cbad6b0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   steamAppId: 480

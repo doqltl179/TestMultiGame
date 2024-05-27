@@ -1,13 +1,5 @@
 {
   "dependencies": {
-    "com.community.netcode.transport.facepunch": {
-      "version": "file:com.community.netcode.transport.facepunch@8eab2c9713",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "com.unity.netcode.gameobjects": "1.0.0-pre.4"
-      }
-    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
@@ -124,13 +116,14 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.netcode.gameobjects": {
-      "version": "file:com.unity.netcode.gameobjects@1.8.1",
+      "version": "1.8.1",
       "depth": 0,
-      "source": "embedded",
+      "source": "registry",
       "dependencies": {
         "com.unity.nuget.mono-cecil": "1.10.1",
         "com.unity.transport": "1.4.0"
-      }
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.4",

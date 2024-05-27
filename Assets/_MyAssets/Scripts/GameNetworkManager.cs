@@ -361,7 +361,8 @@ public class GameNetworkManager : MonoBehaviour {
         //    Debug.LogError(ex.ToString());
         //}
         //StartClient(ip == null ? 0 : ip.Value, (value) => {
-        StartClient(lobby.Id, (value) => { 
+        //StartClient(lobby.Id, (value) => { 
+        StartClient(lobby.Owner.Id, (value) => {
             if(value) {
                 SceneLoader.Instance.LoadScene(
                     SceneType.Lobby,

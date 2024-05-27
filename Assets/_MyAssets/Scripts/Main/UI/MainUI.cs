@@ -57,19 +57,19 @@ public class MainUI : MonoBehaviour {
     }
 
     private async void Network_Join(Lobby lobby) {
-        //RoomEnter enter = await lobby.Join();
-        //if(enter != RoomEnter.Success) {
-        //    Debug.Log($"Room join failed. Result: {enter}, LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
+        RoomEnter enter = await lobby.Join();
+        if(enter != RoomEnter.Success) {
+            Debug.Log($"Room join failed. Result: {enter}, LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
 
-        //    return;
-        //}
-
-        //Debug.Log($"Room join success. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
-
-        Lobby? l = await SteamMatchmaking.JoinLobbyAsync(lobby.Id);
-        if(l != null) {
-            Debug.Log($"Room join success. LobbyID: {l.Value.Id}, OwnerName: {l.Value.Owner.Name}, OwnerID: {l.Value.Owner.Id}");
+            return;
         }
+
+        Debug.Log($"Room join success. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
+
+        //Lobby? l = await SteamMatchmaking.JoinLobbyAsync(lobby.Id);
+        //if(l != null) {
+        //    Debug.Log($"Room join success. LobbyID: {l.Value.Id}, OwnerName: {l.Value.Owner.Name}, OwnerID: {l.Value.Owner.Id}");
+        //}
     }
 
     #region Action

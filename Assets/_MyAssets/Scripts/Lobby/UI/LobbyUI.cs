@@ -51,6 +51,8 @@ public class LobbyUI : MonoBehaviour {
                 AddLobbyFriendIcon(friend);
             }
         }
+
+        Debug.Log($"IsHost: {NetworkManager.Singleton.IsHost}, IsServer: {NetworkManager.Singleton.IsServer}, IsClient: {NetworkManager.Singleton.IsClient}");
     }
 
     private async void AddInviteFriendIcon(Friend friendId) {
