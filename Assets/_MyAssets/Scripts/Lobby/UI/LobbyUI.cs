@@ -32,6 +32,8 @@ public class LobbyUI : MonoBehaviour {
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
 
+        if(NetworkManager.Singleton.IsServer) networkTransmission.NetworkObject.Spawn(true);
+
         networkTransmission.OnClickReady += OnClickReady;
     }
 

@@ -71,8 +71,8 @@ namespace Netcode.Transports.Facepunch
 
         #region NetworkTransport Overrides
 
-        //public override ulong ServerClientId => 0;
-        public override ulong ServerClientId => 9999;
+        public override ulong ServerClientId => 0;
+        //public override ulong ServerClientId => 9999;
 
         public override void DisconnectLocalClient()
         {

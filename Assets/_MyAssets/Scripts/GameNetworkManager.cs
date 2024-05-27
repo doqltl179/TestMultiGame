@@ -95,6 +95,7 @@ public class GameNetworkManager : MonoBehaviour {
         CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
         CurrentLobby?.SetPublic();
         CurrentLobby?.SetJoinable(true);
+        CurrentLobby?.SetGameServer(CurrentLobby.Value.Owner.Id);
 
         UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
@@ -119,7 +120,7 @@ public class GameNetworkManager : MonoBehaviour {
     public void StartClient(SteamId steamId, Action<bool> callback = null) {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
-        //transport.Initialize(NetworkManager.Singleton);
+        transport.Initialize(NetworkManager.Singleton);
         transport.targetSteamId = steamId;
         if(NetworkManager.Singleton.StartClient()) {
             Debug.Log("Client has started.");

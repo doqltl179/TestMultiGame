@@ -66,7 +66,7 @@ public class MainUI : MonoBehaviour {
 
         Debug.Log($"Room join success. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
 
-        //Lobby? l = await SteamMatchmaking.JoinLobbyAsync(lobby.Id);
+        //Lobby? l = await SteamMatchmaking.JoinLobbyAsync(lobby.Owner.Id);
         //if(l != null) {
         //    Debug.Log($"Room join success. LobbyID: {l.Value.Id}, OwnerName: {l.Value.Owner.Name}, OwnerID: {l.Value.Owner.Id}");
         //}
