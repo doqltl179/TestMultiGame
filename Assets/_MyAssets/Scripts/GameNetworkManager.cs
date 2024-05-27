@@ -19,6 +19,23 @@ public class GameNetworkManager : MonoBehaviour {
 
     public Lobby? CurrentLobby { get; private set; } = null;
     private Dictionary<ulong, MemberInfo> memberInfos = new Dictionary<ulong, MemberInfo>();
+    public Friend? LocalID {
+        get {
+            if(CurrentLobby == null) {
+                Debug.Log("Lobby not exist.");
+
+                return null;
+            }
+
+            foreach(var member in CurrentLobby.Value.Members) {
+                if(member.IsMe) return member;
+            }
+
+            Debug.Log("My ID not found in Lobby.");
+
+            return null;
+        }
+    }
 
     private ChatController chatController;
 
@@ -185,7 +202,20 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     public bool GetReady() {
-        return GetReady(NetworkManager.Singleton.LocalClientId);
+        if(CurrentLobby != null) {
+            Friend? myId = LocalID;
+            if(myId == null) {
+                return false;
+            }
+            else {
+                return GetReady(myId.Value.Id);
+            }
+        }
+        else {
+            Debug.LogError("Lobby not exist.");
+
+            return false;
+        }
     }
 
     public bool GetReady(ulong id) {

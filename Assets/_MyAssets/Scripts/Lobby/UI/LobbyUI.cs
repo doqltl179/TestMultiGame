@@ -10,7 +10,8 @@ using Unity.Netcode;
 using UnityEngine;
 
 public class LobbyUI : MonoBehaviour {
-    [SerializeField] private NetworkTransmission networkTransmission;
+    [SerializeField] private NetworkTransmission networkTransmissionObj;
+    private NetworkTransmission networkTransmission;
 
     [Space(20)]
     [SerializeField] private FriendIcon friendIconObj;
@@ -31,10 +32,6 @@ public class LobbyUI : MonoBehaviour {
     private void Awake() {
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
-
-        if(NetworkManager.Singleton.IsServer) networkTransmission.NetworkObject.Spawn(true);
-
-        networkTransmission.OnClickReady += OnClickReady;
     }
 
     private void OnDestroy() {
@@ -44,7 +41,7 @@ public class LobbyUI : MonoBehaviour {
         networkTransmission.OnClickReady -= OnClickReady;
     }
 
-    private void Start() {
+    private IEnumerator Start() {
         invitePopObject.SetActive(false);
 
         if(GameNetworkManager.Instance.CurrentLobby != null) {
@@ -52,6 +49,24 @@ public class LobbyUI : MonoBehaviour {
                 AddLobbyFriendIcon(friend);
             }
         }
+
+        if(networkTransmission == null) {
+            if(NetworkManager.Singleton.IsHost) {
+                GameObject go = Instantiate(NetworkManager.Singleton.NetworkConfig.Prefabs.NetworkPrefabsLists[0].PrefabList[0].Prefab);
+                networkTransmission = go.GetComponent<NetworkTransmission>();
+            }
+            else {
+                while(networkTransmission == null) {
+                    networkTransmission = FindObjectOfType<NetworkTransmission>();
+
+                    Debug.Log("Frame Check for Find Component.");
+
+                    yield return null;
+                }
+            }
+        }
+
+        networkTransmission.OnClickReady += OnClickReady;
 
         Debug.Log($"IsHost: {NetworkManager.Singleton.IsHost}, IsServer: {NetworkManager.Singleton.IsServer}, IsClient: {NetworkManager.Singleton.IsClient}");
     }
@@ -152,8 +167,11 @@ public class LobbyUI : MonoBehaviour {
 
     #region Action
     public void OnClickReady() {
-        bool ready = !GameNetworkManager.Instance.GetReady();
-        networkTransmission.Ready_ServerRpc(NetworkManager.Singleton.LocalClientId, ready);
+        Friend? local = GameNetworkManager.Instance.LocalID;
+        if(local != null) {
+            bool ready = !GameNetworkManager.Instance.GetReady(local.Value.Id);
+            networkTransmission.Ready_ServerRpc(local.Value.Id, ready);
+        }
     }
 
     private void OnClickReady(ulong id, bool value) {

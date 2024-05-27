@@ -417,7 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c869557566a28224da0f60ca62617d6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  networkTransmission: {fileID: 2091935760}
+  networkTransmissionObj: {fileID: 0}
   friendIconObj: {fileID: 1488137341}
   lobbyFriendRect: {fileID: 651903909}
   invitePopObject: {fileID: 643722624}
@@ -2970,86 +2970,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &2091935759
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 261074709274421396, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5736160485005549902, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: GlobalObjectIdHash
-      value: 1801189492
-      objectReference: {fileID: 0}
-    - target: {fileID: 6380729184880478954, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: GlobalObjectIdHash
-      value: 3856338282
-      objectReference: {fileID: 0}
-    - target: {fileID: 6380729184880478954, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: InScenePlacedSourceGlobalObjectIdHash
-      value: 371210642
-      objectReference: {fileID: 0}
-    - target: {fileID: 6441099380823793334, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-      propertyPath: m_Name
-      value: NetworkTransmission
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
---- !u!114 &2091935760 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3431298115579144683, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
-  m_PrefabInstance: {fileID: 2091935759}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 38ab5382387cbc14eab099f03677252c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2127123075
 GameObject:
   m_ObjectHideFlags: 0
@@ -3270,4 +3190,3 @@ SceneRoots:
   - {fileID: 319651641}
   - {fileID: 6944984216624730993}
   - {fileID: 294265228}
-  - {fileID: 2091935759}
