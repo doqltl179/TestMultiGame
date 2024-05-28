@@ -125,7 +125,7 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response) {
-        Debug.Log($"ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
+        Debug.Log($"ConnectionApprovalCallback. ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
     }
 
     public async void StartServer(int maxMembers, Action<bool> callback = null) {
@@ -166,13 +166,14 @@ public class GameNetworkManager : MonoBehaviour {
             //NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
 
             NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
-
-            NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
         }
         else {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
             //NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
         }
+
+        NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
+
         NetworkManager.Singleton.Shutdown(true);
         Debug.Log("Disconnected.");
 
@@ -249,7 +250,7 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void OnClientDisconnectCallback(ulong clientId) {
-        Debug.Log($"Client has disconnected. clientId: {clientId}");
+        Debug.Log($"OnClientDisconnectCallback. clientId: {clientId}");
 
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
 
@@ -272,7 +273,7 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void OnClientConnectedCallback(ulong clientId) {
-        Debug.Log($"Client has connected. clientId: {clientId}");
+        Debug.Log($"OnClientConnectedCallback. clientId: {clientId}");
     }
 
     private void OnServerStopped(bool obj) {
@@ -297,23 +298,33 @@ public class GameNetworkManager : MonoBehaviour {
         CurrentLobby = lobby;
         UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
-        Debug.Log("Joined lobby.");
+        Debug.Log("OnGameLobbyJoinRequested.");
     }
 
     private void OnLobbyGameCreated(Lobby lobby, uint ip, ushort port, SteamId steamId) {
-        Debug.Log($"Lobby was created. ip: {ip}, port: {port}, name: {steamId}");
+        Debug.Log($"OnLobbyGameCreated. ip: {ip}, port: {port}, name: {steamId}");
 
-        lobby.SetData("ip", ip.ToString());
-        lobby.SetData("port", port.ToString());
+        NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+
+        lobby.SetData(LobbyData.key_ip, ip.ToString());
+        lobby.SetData(LobbyData.key_port, port.ToString());
+        lobby.SetData(LobbyData.key_ownerName, lobby.Owner.Name);
+
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("_____ Lobby Datas _____");
+        foreach(var item in lobby.Data) {
+            sb.AppendLine($"Key: {item.Key} || Value: {item.Value}");
+        }
+        Debug.Log(sb.Length > 1 ? sb.ToString() : "Data not exist.");
     }
 
     // Friend send you an steam invite
     private void OnLobbyInvite(Friend friendId, Lobby lobby) {
-        Debug.Log($"Invite from [{friendId.Name}].");
+        Debug.Log($"OnLobbyInvite. Invite from [{friendId.Name}].");
     }
 
     private void OnLobbyMemberLeave(Lobby lobby, Friend friendId) {
-        Debug.Log($"[{friendId.Name}] leaved.");
+        Debug.Log($"OnLobbyMemberLeave. [{friendId.Name}] leaved.");
 
         MemberInfo info = null;
         if(memberInfos.TryGetValue(friendId.Id.Value, out info)) {
@@ -325,7 +336,7 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void OnLobbyMemberJoined(Lobby lobby, Friend friendId) {
-        Debug.Log($"[{friendId.Name}] joined.");
+        Debug.Log($"OnLobbyMemberJoined. [{friendId.Name}] joined.");
 
         MemberInfo info = null;
         if(memberInfos.TryGetValue(friendId.Id.Value, out info)) {
@@ -420,9 +431,7 @@ public class GameNetworkManager : MonoBehaviour {
             Name = lobby.Owner.Name,
             IsReady = false });
 
-        NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
-
-        Debug.Log($"Lobby created. owner: {lobby.Owner.Name}");
+        Debug.Log($"OnLobbyCreated. owner: {lobby.Owner.Name}");
     }
 
     private void OnConnectionEvent(NetworkManager manager, ConnectionEventData eventData) {
