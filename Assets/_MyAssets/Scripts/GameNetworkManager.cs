@@ -206,23 +206,6 @@ public class GameNetworkManager : MonoBehaviour {
         CurrentLobby.Value.SetData(key, value);
     }
 
-    public bool GetReady() {
-        if(CurrentLobby != null) {
-            Friend? myId = LocalID;
-            if(myId == null) {
-                return false;
-            }
-            else {
-                return GetReady(myId.Value.Id);
-            }
-        }
-        else {
-            Debug.LogError("Lobby not exist.");
-
-            return false;
-        }
-    }
-
     public bool GetReady(ulong id) {
         MemberInfo info = null;
         if(memberInfos.TryGetValue(id, out info)) {
@@ -233,6 +216,16 @@ public class GameNetworkManager : MonoBehaviour {
         }
 
         return info != null ? info.IsReady : false;
+    }
+
+    public void SetReady(ulong id, bool value) {
+        MemberInfo info = null;
+        if(memberInfos.TryGetValue(id, out info)) {
+            info.IsReady = value;
+        }
+        else {
+            Debug.LogError($"Member not found. id: {id}");
+        }
     }
     #endregion
 

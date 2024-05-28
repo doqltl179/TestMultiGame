@@ -417,7 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c869557566a28224da0f60ca62617d6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  networkTransmissionObj: {fileID: 0}
+  networkTransmissionObj: {fileID: 5736160485005549902, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
   friendIconObj: {fileID: 1488137341}
   lobbyFriendRect: {fileID: 651903909}
   invitePopObject: {fileID: 643722624}

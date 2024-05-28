@@ -10,7 +10,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 public class LobbyUI : MonoBehaviour {
-    [SerializeField] private NetworkTransmission networkTransmissionObj;
+    [SerializeField] private NetworkObject networkTransmissionObj;
     private NetworkTransmission networkTransmission;
 
     [Space(20)]
@@ -52,8 +52,10 @@ public class LobbyUI : MonoBehaviour {
 
         if(networkTransmission == null) {
             if(NetworkManager.Singleton.IsHost) {
-                GameObject go = Instantiate(NetworkManager.Singleton.NetworkConfig.Prefabs.NetworkPrefabsLists[0].PrefabList[0].Prefab);
-                networkTransmission = go.GetComponent<NetworkTransmission>();
+                NetworkObject go = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(networkTransmissionObj);
+                NetworkTransmission transmission = go.GetComponent<NetworkTransmission>();
+
+                networkTransmission = transmission;
             }
             else {
                 WaitForSeconds wait = new WaitForSeconds(1.0f);
@@ -183,6 +185,8 @@ public class LobbyUI : MonoBehaviour {
         if(local != null) {
             bool ready = !GameNetworkManager.Instance.GetReady(local.Value.Id);
             networkTransmission.Ready_ServerRpc(local.Value.Id, ready);
+
+            GameNetworkManager.Instance.SetReady(local.Value.Id, ready);
         }
     }
 
