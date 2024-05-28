@@ -58,8 +58,8 @@ public class LobbyUI : MonoBehaviour {
                 networkTransmission = transmission;
             }
             else {
-                WaitForSeconds wait = new WaitForSeconds(1.0f);
-                const int maxCount = 10;
+                WaitForSeconds wait = new WaitForSeconds(0.5f);
+                const int maxCount = 20;
                 int count = 0;
                 while(count < maxCount) {
                     networkTransmission = FindObjectOfType<NetworkTransmission>();
