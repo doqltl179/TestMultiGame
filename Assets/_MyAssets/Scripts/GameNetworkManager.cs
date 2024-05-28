@@ -309,6 +309,7 @@ public class GameNetworkManager : MonoBehaviour {
         lobby.SetData(LobbyData.key_ip, ip.ToString());
         lobby.SetData(LobbyData.key_port, port.ToString());
         lobby.SetData(LobbyData.key_ownerName, lobby.Owner.Name);
+        lobby.SetData(LobbyData.key_roomTitle, "Test Lobby Title");
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("_____ Lobby Datas _____");
