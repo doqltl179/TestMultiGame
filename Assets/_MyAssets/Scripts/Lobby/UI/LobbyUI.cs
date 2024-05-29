@@ -47,7 +47,7 @@ public class LobbyUI : MonoBehaviour {
 
         if(networkTransmission != null) networkTransmission.OnClickReady -= OnClickReady;
 
-        GameNetworkManager.Instance.OnReadyAll += OnReadyAll;
+        GameNetworkManager.Instance.OnReadyAll -= OnReadyAll;
     }
 
     private IEnumerator Start() {

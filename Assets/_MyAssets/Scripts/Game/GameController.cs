@@ -19,6 +19,8 @@ public class GameController : MonoBehaviour {
     }
 
     private IEnumerator Start() {
+        CameraManager.Instance.InitCamera();
+
         while(SceneLoader.Instance.IsLoading) {
             yield return null;
         }
@@ -79,7 +81,7 @@ public class GameController : MonoBehaviour {
 
     #region Action
     private void OnReadyAll(bool value) {
-
+        Debug.Log("All players loaded [Game] scene.");
     }
     #endregion
 }
