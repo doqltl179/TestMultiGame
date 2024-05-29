@@ -102,8 +102,20 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     private void Start() {
-        
+        //transport.OnTransportEvent += OnTransportEvent;
     }
+
+    //private void OnTransportEvent(NetworkEvent eventType, ulong clientId, ArraySegment<byte> payload, float receiveTime) {
+    //    //Debug.Log($"OnTransportEvent. type: {eventType}, clientId: {clientId}, receiveTime: {receiveTime}, payload: {Encoding.ASCII.GetString(payload.Array, payload.Offset, payload.Count)}");
+
+    //    StringBuilder payloadString = new StringBuilder();
+    //    if(payload.Array != null) {
+    //        for(int i = 0; i < payload.Array.Length; i++) {
+    //            payloadString.Append($"{payload.Array[i]} ");
+    //        }
+    //    }
+    //    Debug.Log($"OnTransportEvent. type: {eventType}, clientId: {clientId}, receiveTime: {receiveTime}, payload: {payloadString}");
+    //}
 
     #region Utility
     public void Init() {
@@ -345,6 +357,8 @@ public class GameNetworkManager : MonoBehaviour {
 
         ulong id = ulong.Parse(LobbyData.GetOwnerId(lobby));
         if(id == friendId.Id) {
+            Debug.Log("Owner leaved.");
+
             Disconnect(() => {
                 SceneLoader.Instance.LoadScene(
                 SceneType.Main,
@@ -357,6 +371,9 @@ public class GameNetworkManager : MonoBehaviour {
                     LoadingPanel.Instance.StopProgressUpdate();
                 });
             });
+        }
+        else {
+            Debug.Log("Member leaved.");
         }
     }
 

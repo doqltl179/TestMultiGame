@@ -63,28 +63,33 @@ namespace Mu3Library.Log {
 
         #region Action
         private void LogMessageReceived(string condition, string stackTrace, LogType type) {
-            LogMessage lm = UnityObjectPoolManager.Instance.GetObject<LogMessage>();
-            if(lm == null) {
-                lm = Instantiate(logObj);
+            try {
+                LogMessage lm = UnityObjectPoolManager.Instance.GetObject<LogMessage>();
+                if(lm == null) {
+                    lm = Instantiate(logObj);
+                }
+                lm.transform.SetParent(logParent);
+                lm.transform.localScale = Vector3.one;
+                lm.gameObject.SetActive(true);
+
+                string logText = condition;
+                switch(type) {
+                    case LogType.Log: if(printStackTrace_Log) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+                    case LogType.Warning: if(printStackTrace_Warning) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+                    case LogType.Error: if(printStackTrace_Error) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+                    case LogType.Exception: if(printStackTrace_Exception) logText += $"\n\n[Stack]\n{stackTrace}"; break;
+                }
+                lm.SetLog(type, logText);
+
+                logs.Add(lm);
+
+                AddLogCount(type);
+
+                StartCoroutine(RefreshLogRect(lm));
             }
-            lm.transform.SetParent(logParent);
-            lm.transform.localScale = Vector3.one;
-            lm.gameObject.SetActive(true);
+            catch {
 
-            string logText = condition;
-            switch(type) {
-                case LogType.Log: if(printStackTrace_Log) logText += $"\n\n[Stack]\n{stackTrace}"; break;
-                case LogType.Warning: if(printStackTrace_Warning) logText += $"\n\n[Stack]\n{stackTrace}"; break;
-                case LogType.Error: if(printStackTrace_Error) logText += $"\n\n[Stack]\n{stackTrace}"; break;
-                case LogType.Exception: if(printStackTrace_Exception) logText += $"\n\n[Stack]\n{stackTrace}"; break;
             }
-            lm.SetLog(type, logText);
-
-            logs.Add(lm);
-
-            AddLogCount(type);
-
-            StartCoroutine(RefreshLogRect(lm));
         }
 
         private IEnumerator RefreshLogRect(LogMessage log) {
