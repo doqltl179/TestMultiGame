@@ -64,5 +64,18 @@ public class ChatController : MonoBehaviour {
 
         chat.Text = $"{name} : {message}";
     }
+
+    public void AddChat(string message) {
+        ChatObject chat = UnityObjectPoolManager.Instance.GetObject<ChatObject>();
+        if(chat == null) {
+            chat = Instantiate(chatObj);
+        }
+        chat.transform.SetParent(textParent);
+        chat.gameObject.SetActive(true);
+
+        chat.transform.localScale = Vector3.one;
+
+        chat.Text = $"{message}";
+    }
     #endregion
 }

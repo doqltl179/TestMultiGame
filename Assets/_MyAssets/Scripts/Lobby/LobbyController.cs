@@ -20,4 +20,10 @@ public class LobbyController : MonoBehaviour {
 
         CameraManager.Instance.InitCamera();
     }
+
+    #region Action
+    public void StartGame() {
+        Debug.Log($"Start Game.");
+    }
+    #endregion
 }

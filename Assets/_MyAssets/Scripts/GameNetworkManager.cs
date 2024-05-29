@@ -55,6 +55,8 @@ public class GameNetworkManager : MonoBehaviour {
         }
     }
 
+    public Action<bool> OnReadyAll;
+
     private ChatController chatController;
 
 
@@ -224,6 +226,8 @@ public class GameNetworkManager : MonoBehaviour {
         MemberInfo info = null;
         if(memberInfos.TryGetValue(id, out info)) {
             info.IsReady = value;
+
+            OnReadyAll?.Invoke(!memberInfos.Any(t => t.Value.IsReady == false));
         }
         else {
             Debug.LogError($"Member not found. id: {id}");
@@ -332,6 +336,8 @@ public class GameNetworkManager : MonoBehaviour {
         MemberInfo info = null;
         if(memberInfos.TryGetValue(friendId.Id.Value, out info)) {
             memberInfos.Remove(friendId.Id.Value);
+
+            OnReadyAll?.Invoke(!memberInfos.Any(t => t.Value.IsReady == false));
         }
         else {
             Debug.LogWarning($"Friend not exist. name: {friendId.Name}");
@@ -369,6 +375,8 @@ public class GameNetworkManager : MonoBehaviour {
                 IsReady = false 
             });
         }
+
+        OnReadyAll?.Invoke(!memberInfos.Any(t => t.Value.IsReady == false));
     }
 
     private void OnLobbyEntered(Lobby lobby) {
@@ -427,7 +435,7 @@ public class GameNetworkManager : MonoBehaviour {
                     });
             }
             else {
-                Debug.Log("Failed create lobby.");
+                Debug.Log("Failed enter lobby.");
             }
         });
     }

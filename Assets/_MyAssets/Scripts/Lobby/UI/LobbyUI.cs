@@ -2,7 +2,6 @@ using Mu3Library;
 using Mu3Library.Utility;
 using Steamworks;
 using Steamworks.Data;
-using Steamworks.ServerList;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +9,15 @@ using Unity.Netcode;
 using UnityEngine;
 
 public class LobbyUI : MonoBehaviour {
+    [SerializeField] private ChatController chatController;
+
+    [Space(20)]
     [SerializeField] private NetworkObject networkTransmissionObj;
     private NetworkTransmission networkTransmission;
+
+    [Space(20)]
+    [SerializeField] private GameObject readyButtonObj;
+    [SerializeField] private GameObject gameStartButtonObj;
 
     [Space(20)]
     [SerializeField] private FriendIcon friendIconObj;
@@ -39,10 +45,13 @@ public class LobbyUI : MonoBehaviour {
         SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
 
         if(networkTransmission != null) networkTransmission.OnClickReady -= OnClickReady;
+
+        GameNetworkManager.Instance.OnReadyAll += OnReadyAll;
     }
 
     private IEnumerator Start() {
         invitePopObject.SetActive(false);
+        gameStartButtonObj.SetActive(false);
 
         if(GameNetworkManager.Instance.CurrentLobby != null) {
             foreach(Friend friend in GameNetworkManager.Instance.CurrentLobby.Value.Members) {
@@ -56,6 +65,8 @@ public class LobbyUI : MonoBehaviour {
                 NetworkTransmission transmission = go.GetComponent<NetworkTransmission>();
 
                 networkTransmission = transmission;
+
+                GameNetworkManager.Instance.OnReadyAll += OnReadyAll;
             }
             else {
                 WaitForSeconds wait = new WaitForSeconds(0.5f);
@@ -71,16 +82,16 @@ public class LobbyUI : MonoBehaviour {
                 }
 
                 if(networkTransmission == null) {
-                    Debug.Log($"[{nameof(NetworkTransmission)}] not found.");
+                    Debug.LogWarning($"[{nameof(NetworkTransmission)}] not found.");
 
-                    Disconnect();
+                    //Disconnect();
 
                     yield break;
                 }
             }
         }
 
-        networkTransmission.OnClickReady += OnClickReady;
+        if(networkTransmission != null) networkTransmission.OnClickReady += OnClickReady;
 
         Debug.Log($"IsHost: {NetworkManager.Singleton.IsHost}, IsServer: {NetworkManager.Singleton.IsServer}, IsClient: {NetworkManager.Singleton.IsClient}");
     }
@@ -180,6 +191,11 @@ public class LobbyUI : MonoBehaviour {
     #endregion
 
     #region Action
+    private void OnReadyAll(bool value) {
+        gameStartButtonObj.SetActive(value);
+        //readyButtonObj.SetActive(!gameStartButtonObj.activeSelf);
+    }
+
     public void OnClickReady() {
         Friend? local = GameNetworkManager.Instance.LocalID;
         if(local != null) {
@@ -238,6 +254,8 @@ public class LobbyUI : MonoBehaviour {
             FriendIcon icon = lobbyFriendIcons[index];
             lobbyFriendIcons.RemoveAt(index);
             UnityObjectPoolManager.Instance.AddObject(icon);
+
+            chatController.AddChat($"[{friendId.Name}] leaved.");
         }
         else {
             Debug.LogError($"FriendIcon not found. id: {friendId.Id}, name: {friendId.Name}");
@@ -248,6 +266,8 @@ public class LobbyUI : MonoBehaviour {
         //Debug.Log($"[{friendId.Name}] joined.");
 
         AddLobbyFriendIcon(friendId);
+
+        chatController.AddChat($"[{friendId.Name}] joined.");
     }
     #endregion
 
