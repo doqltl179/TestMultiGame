@@ -12,9 +12,18 @@ using UnityEngine;
 // ClientRpc => Server에서 호출하며 Client에서 실행.
 //-------------------------------------------------------------------------------
 public class NetworkTransmission : NetworkBehaviour {
+    [SerializeField] private NetworkObject characterObj;
+
     public Action<ulong, bool> OnClickReady;
 
 
+
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestInstantiateCharacter_ServerRpc(ulong from, ulong clientId) {
+        Debug.Log($"RequestInstantiate_ServerRpc. from: {from}");
+
+        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(characterObj, clientId, true, true);
+    }
 
     [ServerRpc(RequireOwnership = false)]
     public void Ready_ServerRpc(ulong from, bool value) {

@@ -9,7 +9,6 @@ public class GameController : MonoBehaviour {
     [SerializeField] private NetworkObject networkTransmissionObj;
     private NetworkTransmission networkTransmission;
 
-    [SerializeField] private NetworkObject charactorObj;
     private CharacterController player;
 
 
@@ -58,10 +57,18 @@ public class GameController : MonoBehaviour {
         }
 
         if(player == null) {
-            NetworkObject go = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(charactorObj, NetworkManager.Singleton.LocalClientId, true, true);
-            CharacterController charactor = go.GetComponent<CharacterController>();
+            Friend? local = GameNetworkManager.Instance.LocalID;
+            if(local != null) {
+                networkTransmission.RequestInstantiateCharacter_ServerRpc(local.Value.Id, NetworkManager.Singleton.LocalClientId);
 
-            player = charactor;
+                while(player == null) {
+                    if(NetworkManager.Singleton.LocalClient.PlayerObject != null) {
+                        player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CharacterController>();
+                    }
+
+                    yield return null;
+                }
+            }
         }
 
         Ready();
