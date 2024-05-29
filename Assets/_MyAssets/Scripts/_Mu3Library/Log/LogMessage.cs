@@ -5,10 +5,16 @@ using UnityEngine;
 
 namespace Mu3Library.Log {
     public class LogMessage : MonoBehaviour {
+        private RectTransform rectTransform;
+
         [SerializeField] private TextMeshProUGUI type;
         [SerializeField] private TextMeshProUGUI message;
 
 
+
+        private void Awake() {
+            if(rectTransform == null) rectTransform = GetComponent<RectTransform>();
+        }
 
         #region Utility
         public void SetLog(LogType logType, string log) {
@@ -25,6 +31,8 @@ namespace Mu3Library.Log {
             }
 
             message.text = log;
+
+            rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, message.preferredHeight);
         }
         #endregion
     }

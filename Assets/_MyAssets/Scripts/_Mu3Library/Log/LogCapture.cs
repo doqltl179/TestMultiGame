@@ -15,8 +15,12 @@ namespace Mu3Library.Log {
         }
 
         [Space(20)]
+        [SerializeField] private RectTransform anchorLB;
+        [SerializeField] private RectTransform anchorRT;
+        [SerializeField] private RectTransform logParent;
+
+        [Space(20)]
         [SerializeField] private LogMessage logObj;
-        [SerializeField] private Transform logParent;
         private List<LogMessage> logs = new List<LogMessage>();
 
         [Space(20)]
@@ -41,6 +45,8 @@ namespace Mu3Library.Log {
 
         private void Start() {
             logCountText.text = "";
+
+            logParent.sizeDelta = new Vector2(anchorRT.anchoredPosition.x - anchorLB.anchoredPosition.x, logParent.sizeDelta.y);
         }
 
         #region Utility
@@ -63,6 +69,7 @@ namespace Mu3Library.Log {
             }
             lm.transform.SetParent(logParent);
             lm.transform.localScale = Vector3.one;
+            lm.gameObject.SetActive(true);
 
             string logText = condition;
             switch(type) {
@@ -73,7 +80,6 @@ namespace Mu3Library.Log {
             }
             lm.SetLog(type, logText);
 
-            lm.gameObject.SetActive(true);
             logs.Add(lm);
 
             AddLogCount(type);

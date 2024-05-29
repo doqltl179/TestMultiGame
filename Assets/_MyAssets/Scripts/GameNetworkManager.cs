@@ -92,7 +92,7 @@ public class GameNetworkManager : MonoBehaviour {
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
 
-        NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
+        //NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
     }
 
     private void OnApplicationQuit() {
@@ -109,7 +109,8 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     public async void StartHost(int maxMembers, Action<bool> callback = null) {
-        NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
+        //NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
+        //NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
 
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnServerStopped += OnServerStopped;
@@ -124,9 +125,9 @@ public class GameNetworkManager : MonoBehaviour {
         callback?.Invoke(CurrentLobby != null);
     }
 
-    private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response) {
-        Debug.Log($"ConnectionApprovalCallback. ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
-    }
+    //private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response) {
+    //    Debug.Log($"ConnectionApprovalCallback. ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
+    //}
 
     public async void StartServer(int maxMembers, Action<bool> callback = null) {
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
@@ -165,7 +166,7 @@ public class GameNetworkManager : MonoBehaviour {
             NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
             //NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
 
-            NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
+            //NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
         }
         else {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
@@ -308,6 +309,7 @@ public class GameNetworkManager : MonoBehaviour {
 
         lobby.SetData(LobbyData.key_ip, ip.ToString());
         lobby.SetData(LobbyData.key_port, port.ToString());
+        lobby.SetData(LobbyData.key_ownerId, steamId.ToString());
         lobby.SetData(LobbyData.key_ownerName, lobby.Owner.Name);
         lobby.SetData(LobbyData.key_roomTitle, "Test Lobby Title");
 
@@ -333,6 +335,22 @@ public class GameNetworkManager : MonoBehaviour {
         }
         else {
             Debug.LogWarning($"Friend not exist. name: {friendId.Name}");
+        }
+
+        ulong id = ulong.Parse(LobbyData.GetOwnerId(lobby));
+        if(id == friendId.Id) {
+            Disconnect(() => {
+                SceneLoader.Instance.LoadScene(
+                SceneType.Main,
+                () => {
+                    LoadingPanel.Instance.SetActive(true, 0.5f);
+                    LoadingPanel.Instance.UpdateProgress();
+                },
+                () => {
+                    LoadingPanel.Instance.SetActive(false, 0.5f);
+                    LoadingPanel.Instance.StopProgressUpdate();
+                });
+            });
         }
     }
 
