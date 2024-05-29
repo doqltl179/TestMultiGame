@@ -1,3 +1,4 @@
+using Mu3Library;
 using Mu3Library.Utility;
 using Steamworks;
 using System;
@@ -30,12 +31,41 @@ public class NetworkTransmission : NetworkBehaviour {
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SendChatToServer_ServerRpc(ulong from, string message) {
+    public void ResetReady_ServerRpc(ulong from, bool value) {
+        Debug.Log($"ResetReady_ServerRpc. from: {from}, value: {value}");
 
+        ResetReady_ClientRpc(from, value);
     }
 
     [ClientRpc]
-    public void SendChatToClient_ClientRpc(ulong from, string message) {
+    public void ResetReady_ClientRpc(ulong from, bool value) {
+        Debug.Log($"ResetReady_ClientRpc. from: {from}, value: {value}");
 
+        foreach(ulong id in GameNetworkManager.Instance.MemberIDs) {
+            GameNetworkManager.Instance.SetReady(id, false);
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void MoveScene_ServerRpc(ulong from, SceneType scene) {
+        Debug.Log($"MoveScene_ServerRpc. from: {from}, scene: {scene}");
+
+        MoveScene_ClientRpc(from, scene);
+    }
+
+    [ClientRpc]
+    public void MoveScene_ClientRpc(ulong from, SceneType scene) {
+        Debug.Log($"MoveScene_ClientRpc. from: {from}, scene: {scene}");
+
+        SceneLoader.Instance.LoadScene(
+            scene,
+            () => {
+                LoadingPanel.Instance.SetActive(true, 0.5f);
+                LoadingPanel.Instance.UpdateProgress();
+            },
+            () => {
+                LoadingPanel.Instance.SetActive(false, 0.5f);
+                LoadingPanel.Instance.StopProgressUpdate();
+            });
     }
 }

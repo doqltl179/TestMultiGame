@@ -1,3 +1,4 @@
+using Mu3Library;
 using Mu3Library.Utility;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,7 +24,16 @@ public class LobbyController : MonoBehaviour {
 
     #region Action
     public void StartGame() {
-        Debug.Log($"Start Game.");
+        SceneLoader.Instance.LoadScene(
+            SceneType.Game,
+            () => {
+                LoadingPanel.Instance.SetActive(true, 0.5f);
+                LoadingPanel.Instance.UpdateProgress();
+            },
+            () => {
+                LoadingPanel.Instance.SetActive(false, 0.5f);
+                LoadingPanel.Instance.StopProgressUpdate();
+            });
     }
     #endregion
 }

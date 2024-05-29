@@ -37,6 +37,7 @@ public class GameNetworkManager : MonoBehaviour {
 
     public Lobby? CurrentLobby { get; private set; } = null;
     private Dictionary<ulong, MemberInfo> memberInfos = new Dictionary<ulong, MemberInfo>();
+    public ulong[] MemberIDs => memberInfos.Keys.ToArray();
     public Friend? LocalID {
         get {
             if(CurrentLobby == null) {

@@ -206,8 +206,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2001805850}
-        m_TargetAssemblyTypeName: LobbyController, Assembly-CSharp
+      - m_Target: {fileID: 319651642}
+        m_TargetAssemblyTypeName: LobbyUI, Assembly-CSharp
         m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:

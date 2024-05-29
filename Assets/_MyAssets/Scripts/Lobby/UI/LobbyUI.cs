@@ -191,6 +191,13 @@ public class LobbyUI : MonoBehaviour {
     #endregion
 
     #region Action
+    public void StartGame() {
+        Friend? local = GameNetworkManager.Instance.LocalID;
+        if(local != null) {
+            networkTransmission.MoveScene_ServerRpc(local.Value.Id, SceneType.Game);
+        }
+    }
+
     private void OnReadyAll(bool value) {
         gameStartButtonObj.SetActive(value);
         //readyButtonObj.SetActive(!gameStartButtonObj.activeSelf);
