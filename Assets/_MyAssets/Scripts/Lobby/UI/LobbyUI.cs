@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 public class LobbyUI : MonoBehaviour {
     [SerializeField] private ChatController chatController;
@@ -208,8 +209,6 @@ public class LobbyUI : MonoBehaviour {
         if(local != null) {
             bool ready = !GameNetworkManager.Instance.GetReady(local.Value.Id);
             networkTransmission.Ready_ServerRpc(local.Value.Id, ready);
-
-            GameNetworkManager.Instance.SetReady(local.Value.Id, ready);
         }
     }
 
@@ -221,6 +220,8 @@ public class LobbyUI : MonoBehaviour {
         else {
             Debug.LogError($"Member not found. id: {id}");
         }
+
+        GameNetworkManager.Instance.SetReady(id, value);
     }
 
     public void OnClickInvite() {
