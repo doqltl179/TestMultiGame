@@ -4175,6 +4175,7 @@ GameObject:
   - component: {fileID: 8774807840506982732}
   - component: {fileID: 3672583681482547811}
   - component: {fileID: 8013822615866031310}
+  - component: {fileID: 7647002468167632004}
   - component: {fileID: 7430023285247521712}
   m_Layer: 0
   m_Name: MainCharacter
@@ -4223,6 +4224,7 @@ MonoBehaviour:
   moveSpeed: 3
   moveBoost: 5
   rotateSpeed: 8
+  networkPropertyUpdateHelper: {fileID: 7647002468167632004}
   networkObject: {fileID: 8013822615866031310}
 --- !u!114 &8013822615866031310
 MonoBehaviour:
@@ -4245,6 +4247,27 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &7647002468167632004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7462086255542846266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d8a2adfbd1e34c419a6e275c9a50f18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 3672583681482547811}
+  Net_Pos:
+    m_InternalValue: {x: 0, y: 0, z: 0}
+  Net_Rot:
+    m_InternalValue: {x: 0, y: 0, z: 0, w: 0}
+  Net_Scale:
+    m_InternalValue: {x: 0, y: 0, z: 0}
+  Net_MoveBlend:
+    m_InternalValue: 0
 --- !u!54 &7430023285247521712
 Rigidbody:
   m_ObjectHideFlags: 0
