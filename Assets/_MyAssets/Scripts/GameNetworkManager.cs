@@ -35,6 +35,10 @@ public class GameNetworkManager : MonoBehaviour {
 
     [SerializeField] private FacepunchTransport transport;
 
+    [Space(20)]
+    [SerializeField] private NetworkObject networkPlayerObj;
+    private NetworkPlayerObject networkPlayerObject;
+
     public Lobby? CurrentLobby { get; private set; } = null;
     private Dictionary<ulong, MemberInfo> memberInfos = new Dictionary<ulong, MemberInfo>();
     public ulong[] MemberIDs => memberInfos.Keys.ToArray();
@@ -137,6 +141,20 @@ public class GameNetworkManager : MonoBehaviour {
 
         UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
+        if(networkPlayerObject == null) {
+            GameObject go = Instantiate(NetworkManager.Singleton.NetworkConfig.PlayerPrefab);
+            //DontDestroyOnLoad(go);
+
+            NetworkPlayerObject npo = go.GetComponent<NetworkPlayerObject>();
+
+            networkPlayerObject = npo;
+        }
+        if(!networkPlayerObject.IsSpawned) {
+            networkPlayerObject.NetworkObject.SpawnAsPlayerObject(0);
+            networkPlayerObject.NetworkObject.DestroyWithScene = false;
+            Debug.Log(networkPlayerObject.NetworkObject.TrySetParent(transform));
+        }
+
         callback?.Invoke(CurrentLobby != null);
     }
 
@@ -189,6 +207,12 @@ public class GameNetworkManager : MonoBehaviour {
         }
 
         NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
+
+        if(networkPlayerObject != null && networkPlayerObject.IsSpawned) {
+            networkPlayerObject.NetworkObject.Despawn(false);
+
+            Debug.Log($"NetworkPlayerObject despawn.");
+        }
 
         NetworkManager.Singleton.Shutdown(true);
         Debug.Log("Disconnected.");

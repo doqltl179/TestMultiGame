@@ -47,6 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transport: {fileID: 3832559671251922646}
+  networkPlayerObj: {fileID: 5815646461435707476, guid: 0973d15870425ea428007ceaa7f232a3, type: 3}
 --- !u!114 &5901946073048489867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,11 +63,11 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 3832559671251922646}
-    PlayerPrefab: {fileID: 0}
+    PlayerPrefab: {fileID: 4802449449288382361, guid: 0973d15870425ea428007ceaa7f232a3, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 95a207085363b9e46b0c2ab8a331895b, type: 2}
-    TickRate: 30
+    TickRate: 60
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
