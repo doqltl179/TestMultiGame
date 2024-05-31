@@ -2,8 +2,11 @@ using Mu3Library.Utility;
 using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+
+using CharacterController = Mu3Library.Character.CharacterController;
 
 public class GameController : MonoBehaviour {
     [SerializeField] private NetworkObject networkTransmissionObj;
@@ -61,10 +64,10 @@ public class GameController : MonoBehaviour {
             if(local != null) {
                 networkTransmission.RequestInstantiateCharacter_ServerRpc(local.Value.Id, NetworkManager.Singleton.LocalClientId);
 
+                NetworkCharacterController[] temp;
                 while(player == null) {
-                    if(NetworkManager.Singleton.LocalClient.PlayerObject != null) {
-                        player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CharacterController>();
-                    }
+                    temp = FindObjectsOfType<NetworkCharacterController>();
+                    player = temp.Where(t => t.IsOwner).FirstOrDefault();
 
                     yield return null;
                 }
