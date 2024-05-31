@@ -9,6 +9,12 @@ namespace Mu3Library.Character {
         [SerializeField] private AnimationController animationController;
         [SerializeField] private Rigidbody rigidbody;
         [SerializeField] private CapsuleCollider collider;
+
+        public bool IsKinematic {
+            get => rigidbody.isKinematic;
+            set => rigidbody.isKinematic = value;
+        }
+
         public float Radius => collider.radius;
         public float Height => collider.height;
 

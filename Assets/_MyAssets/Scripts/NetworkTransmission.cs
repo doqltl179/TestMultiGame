@@ -22,7 +22,9 @@ public class NetworkTransmission : NetworkBehaviour {
     public void RequestInstantiateCharacter_ServerRpc(ulong from, ulong clientId) {
         Debug.Log($"RequestInstantiate_ServerRpc. from: {from}");
 
-        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(characterObj, clientId, true, true);
+        NetworkObject no = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(characterObj, clientId, true, true);
+        NetworkCharacterController player = no.GetComponent<NetworkCharacterController>();
+        player.IsKinematic = GameNetworkManager.Instance.LocalID.Value.Id != from;
     }
 
     [ServerRpc(RequireOwnership = false)]
