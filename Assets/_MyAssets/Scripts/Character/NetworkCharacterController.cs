@@ -25,7 +25,7 @@ public class NetworkCharacterController : CharacterController {
         if(IsOwner) {
             base.Update();
 
-            //networkPropertyUpdateHelper.UpdatePropertyAll();
+            networkPropertyUpdateHelper.UpdatePropertyAll();
         }
     }
 }
