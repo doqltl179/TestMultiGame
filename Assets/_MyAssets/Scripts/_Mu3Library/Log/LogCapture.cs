@@ -49,6 +49,19 @@ namespace Mu3Library.Log {
             logParent.sizeDelta = new Vector2(anchorRT.anchoredPosition.x - anchorLB.anchoredPosition.x, logParent.sizeDelta.y);
         }
 
+        private void Update() {
+            if(Input.GetKeyDown(KeyCode.Alpha1)) {
+                canvasGroup.alpha = 0.86f;
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+            }
+            else if(Input.GetKeyDown(KeyCode.Alpha0)) {
+                canvasGroup.alpha = 0.0f;
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;
+            }
+        }
+
         #region Utility
         public void ClearLog() {
             for(int i = 0; i < logs.Count; i++) {

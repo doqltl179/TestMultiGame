@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Mu3Library.Utility {
@@ -59,6 +60,9 @@ namespace Mu3Library.Utility {
 
         public static Vector3 GetDirectionXZ(Vector3 from, Vector3 to) => (new Vector3(to.x, 0, to.z) - new Vector3(from.x, 0, from.z)).normalized;
 
+        public static Vector3 ColToVec(Color col) => new Vector3(col.r, col.g, col.b);
+        public static Color VecToCol(Vector3 vec3, float alpha = 1.0f) => new Color(vec3.x, vec3.y, vec3.z, alpha);
+
         public static Vector3 BezierCurve(Vector3 start, Vector3 end, float angleDeg, float lerp) {
             Vector3 posDiff = end - start;
 
@@ -80,7 +84,14 @@ namespace Mu3Library.Utility {
         }
         #endregion
 
+        #region Color
+        public static Color GetChangedAlphaColor(Color color, float alpha) => new Color(color.r, color.g, color.b, alpha);
+        #endregion
+
         #region Else
+        public static string EnumToString<T>(T enumValue) where T : Enum => enumValue.ToString();
+        public static T StringToEnum<T>(string stringValue) where T : Enum => (T)Enum.Parse(typeof(T), stringValue);
+
         public static void SetLayerWithChildren(Transform target, string layerName) {
             SetLayerWithChildren(target, LayerMask.NameToLayer(layerName));
         }

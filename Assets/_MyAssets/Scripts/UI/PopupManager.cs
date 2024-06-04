@@ -95,8 +95,9 @@ public class PopupManager : MonoBehaviour {
     #endregion
 
     private void SetMessage(string message) {
-        messageRect.sizeDelta = new Vector2(messageRect.sizeDelta.x, CalculatedMessageBoxHeight(message));
+        //messageRect.sizeDelta = new Vector2(messageRect.sizeDelta.x, CalculatedMessageBoxHeight(message));
         messageTxt.text = message;
+        messageRect.sizeDelta = new Vector2(messageRect.sizeDelta.x, messageTxt.preferredHeight);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(popupRect);
     }

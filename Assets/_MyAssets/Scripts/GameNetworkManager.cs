@@ -1,13 +1,17 @@
 using Mu3Library;
+using Mu3Library.Log;
+using Mu3Library.Scene;
 using Mu3Library.Utility;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using Steamworks.Data;
+using Steamworks.ServerList;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -39,9 +43,13 @@ public class GameNetworkManager : MonoBehaviour {
     [SerializeField] private NetworkObject networkPlayerObj;
     private NetworkPlayerObject networkPlayerObject;
 
+    public Lobby[] LobbyList { get; private set; }
+    public int LobbyCount => LobbyList == null ? 0 : LobbyList.Length;
+
+    public Lobby[] FilterLobbyList { get; private set; }
+    public int FilterLobbyCount => FilterLobbyList == null ? 0 : FilterLobbyList.Length;
+
     public Lobby? CurrentLobby { get; private set; } = null;
-    private Dictionary<ulong, MemberInfo> memberInfos = new Dictionary<ulong, MemberInfo>();
-    public ulong[] MemberIDs => memberInfos.Keys.ToArray();
     public Friend? LocalID {
         get {
             if(CurrentLobby == null) {
@@ -59,10 +67,21 @@ public class GameNetworkManager : MonoBehaviour {
             return null;
         }
     }
+    private object[] param = null;
+
+    private Dictionary<ulong, SteamUserInfoStruct> userInfos = new Dictionary<ulong, SteamUserInfoStruct>();
 
     public Action<bool> OnReadyAll;
 
+    [Space(20)]
+    [SerializeField] private NetworkObject networkTransmissionObj;
+    private NetworkTransmission networkTransmission;
+
     private ChatController chatController;
+
+    [Space(20)]
+    [SerializeField] private LogCapture logCaptureObj;
+    private LogCapture logCapture;
 
 
 
@@ -77,6 +96,11 @@ public class GameNetworkManager : MonoBehaviour {
         SteamMatchmaking.OnChatMessage += OnChatMessage;
         
         SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
+
+        if(logCapture == null) {
+            logCapture = Instantiate(logCaptureObj);
+            DontDestroyOnLoad(logCapture.gameObject);
+        }
     }
 
     private void OnDestroy() {
@@ -98,29 +122,11 @@ public class GameNetworkManager : MonoBehaviour {
         NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
-
-        //NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
     }
 
     private void OnApplicationQuit() {
         Disconnect();
     }
-
-    private void Start() {
-        //transport.OnTransportEvent += OnTransportEvent;
-    }
-
-    //private void OnTransportEvent(NetworkEvent eventType, ulong clientId, ArraySegment<byte> payload, float receiveTime) {
-    //    //Debug.Log($"OnTransportEvent. type: {eventType}, clientId: {clientId}, receiveTime: {receiveTime}, payload: {Encoding.ASCII.GetString(payload.Array, payload.Offset, payload.Count)}");
-
-    //    StringBuilder payloadString = new StringBuilder();
-    //    if(payload.Array != null) {
-    //        for(int i = 0; i < payload.Array.Length; i++) {
-    //            payloadString.Append($"{payload.Array[i]} ");
-    //        }
-    //    }
-    //    Debug.Log($"OnTransportEvent. type: {eventType}, clientId: {clientId}, receiveTime: {receiveTime}, payload: {payloadString}");
-    //}
 
     #region Utility
     public void Init() {
@@ -128,9 +134,6 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     public async void StartHost(int maxMembers, Action<bool> callback = null) {
-        //NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallback;
-        //NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
-
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnServerStopped += OnServerStopped;
         NetworkManager.Singleton.StartHost();
@@ -139,36 +142,13 @@ public class GameNetworkManager : MonoBehaviour {
         CurrentLobby?.SetJoinable(true);
         CurrentLobby?.SetGameServer(CurrentLobby.Value.Owner.Id);
 
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
+        if(networkTransmission == null) {
+            NetworkObject no = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(networkTransmissionObj);
 
-        if(networkPlayerObject == null) {
-            GameObject go = Instantiate(NetworkManager.Singleton.NetworkConfig.PlayerPrefab);
-            //DontDestroyOnLoad(go);
+            DontDestroyOnLoad(no.gameObject);
 
-            NetworkPlayerObject npo = go.GetComponent<NetworkPlayerObject>();
-
-            networkPlayerObject = npo;
+            networkTransmission = no.GetComponent<NetworkTransmission>();
         }
-        if(!networkPlayerObject.IsSpawned) {
-            networkPlayerObject.NetworkObject.SpawnAsPlayerObject(0);
-            networkPlayerObject.NetworkObject.DestroyWithScene = false;
-            Debug.Log(networkPlayerObject.NetworkObject.TrySetParent(transform));
-        }
-
-        callback?.Invoke(CurrentLobby != null);
-    }
-
-    //private void ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response) {
-    //    Debug.Log($"ConnectionApprovalCallback. ClientNetworkId: {request.ClientNetworkId}, Approved: {response.Approved}, Reason: {response.Reason}");
-    //}
-
-    public async void StartServer(int maxMembers, Action<bool> callback = null) {
-        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-        NetworkManager.Singleton.OnServerStopped += OnServerStopped;
-        NetworkManager.Singleton.StartServer();
-        CurrentLobby = await SteamMatchmaking.CreateLobbyAsync(maxMembers);
-
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
         callback?.Invoke(CurrentLobby != null);
     }
@@ -189,6 +169,16 @@ public class GameNetworkManager : MonoBehaviour {
     }
 
     public void Disconnect(Action callback = null) {
+        CurrentLobby = null;
+        FilterLobbyList = null;
+
+        if(userInfos != null && userInfos.Count > 0) {
+            foreach(var key in userInfos.Keys) {
+                userInfos[key].DestroyImages();
+            }
+            userInfos = new Dictionary<ulong, SteamUserInfoStruct>();
+        }
+
         CurrentLobby?.Leave();
         CurrentLobby = null;
         if(NetworkManager.Singleton == null) {
@@ -197,22 +187,15 @@ public class GameNetworkManager : MonoBehaviour {
 
         if(NetworkManager.Singleton.IsHost) {
             NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
-            //NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
-
-            //NetworkManager.Singleton.ConnectionApprovalCallback -= ConnectionApprovalCallback;
         }
         else {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
-            //NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
         }
 
         NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
 
-        if(networkPlayerObject != null && networkPlayerObject.IsSpawned) {
-            networkPlayerObject.NetworkObject.Despawn(false);
-
-            Debug.Log($"NetworkPlayerObject despawn.");
-        }
+        networkTransmission = null;
+        networkPlayerObject = null;
 
         NetworkManager.Singleton.Shutdown(true);
         Debug.Log("Disconnected.");
@@ -241,34 +224,51 @@ public class GameNetworkManager : MonoBehaviour {
         }
     }
 
-    public void UpdateLobbyData(string key, string value) {
-        if(CurrentLobby == null) return;
+    public async Task LoadAllLobby() {
+        Lobby[] list = await SteamMatchmaking.LobbyList.RequestAsync();
+        if(list == null) {
+            Debug.Log("Lobby not found.");
 
-        CurrentLobby.Value.SetData(key, value);
+            LobbyList = new Lobby[0];
+        }
+        else {
+            LobbyList = list;
+        }
+    }
+
+    public void SetFilterLobby(bool hidePwd, bool hideFull) {
+        Lobby[] result = LobbyList.Where(t => !LobbyData.GetIsPrivate(t)).ToArray();
+
+        if(hidePwd) {
+            result = result.Where(t => string.IsNullOrEmpty(LobbyData.GetLobbyPassword(t))).ToArray();
+        }
+
+        if(hideFull) {
+            result = result.Where(t => t.MemberCount < t.MaxMembers).ToArray();
+        }
+
+        FilterLobbyList = result;
+    }
+
+    public async Task<Sprite> GetThumbSprite(ulong id) {
+        SteamUserInfoStruct info = null;
+        if(userInfos.TryGetValue(id, out info)) {
+            if(info.ThumbSprite == null) {
+                await info.CreateThumb();
+            }
+
+            return info.ThumbSprite;
+        }
+
+        return null;
     }
 
     public bool GetReady(ulong id) {
-        MemberInfo info = null;
-        if(memberInfos.TryGetValue(id, out info)) {
-
-        }
-        else {
-            Debug.LogError($"Member not found. id: {id}");
-        }
-
-        return info != null ? info.IsReady : false;
+        return false;
     }
 
     public void SetReady(ulong id, bool value) {
-        MemberInfo info = null;
-        if(memberInfos.TryGetValue(id, out info)) {
-            info.IsReady = value;
 
-            OnReadyAll?.Invoke(!memberInfos.Any(t => t.Value.IsReady == false));
-        }
-        else {
-            Debug.LogError($"Member not found. id: {id}");
-        }
     }
     #endregion
 
@@ -298,17 +298,8 @@ public class GameNetworkManager : MonoBehaviour {
 
         if(clientId == 0) {
             Disconnect(() => {
-                if(SceneLoader.Instance.CurrentLoadedScene != SceneType.Main) {
-                    SceneLoader.Instance.LoadScene(
-                        SceneType.Main,
-                        () => {
-                            LoadingPanel.Instance.SetActive(true, 0.5f);
-                            LoadingPanel.Instance.UpdateProgress();
-                        },
-                        () => {
-                            LoadingPanel.Instance.SetActive(false, 0.5f);
-                            LoadingPanel.Instance.StopProgressUpdate();
-                        });
+                if(SceneLoader.Instance.CurrentSceneType != SceneType.Main) {
+                    SceneLoader.Instance.LoadScene(SceneType.Main);
                 }
             });
         }
@@ -338,7 +329,6 @@ public class GameNetworkManager : MonoBehaviour {
         }
 
         CurrentLobby = lobby;
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
         Debug.Log("OnGameLobbyJoinRequested.");
     }
@@ -370,31 +360,12 @@ public class GameNetworkManager : MonoBehaviour {
     private void OnLobbyMemberLeave(Lobby lobby, Friend friendId) {
         Debug.Log($"OnLobbyMemberLeave. [{friendId.Name}] leaved.");
 
-        MemberInfo info = null;
-        if(memberInfos.TryGetValue(friendId.Id.Value, out info)) {
-            memberInfos.Remove(friendId.Id.Value);
-
-            OnReadyAll?.Invoke(!memberInfos.Any(t => t.Value.IsReady == false));
-        }
-        else {
-            Debug.LogWarning($"Friend not exist. name: {friendId.Name}");
-        }
-
         ulong id = ulong.Parse(LobbyData.GetOwnerId(lobby));
         if(id == friendId.Id) {
             Debug.Log("Owner leaved.");
 
             Disconnect(() => {
-                SceneLoader.Instance.LoadScene(
-                SceneType.Main,
-                () => {
-                    LoadingPanel.Instance.SetActive(true, 0.5f);
-                    LoadingPanel.Instance.UpdateProgress();
-                },
-                () => {
-                    LoadingPanel.Instance.SetActive(false, 0.5f);
-                    LoadingPanel.Instance.StopProgressUpdate();
-                });
+                SceneLoader.Instance.LoadScene(SceneType.Main);
             });
         }
         else {
@@ -405,20 +376,7 @@ public class GameNetworkManager : MonoBehaviour {
     private void OnLobbyMemberJoined(Lobby lobby, Friend friendId) {
         Debug.Log($"OnLobbyMemberJoined. [{friendId.Name}] joined.");
 
-        MemberInfo info = null;
-        if(memberInfos.TryGetValue(friendId.Id.Value, out info)) {
-            Debug.LogWarning($"Friend already joined. name: {friendId.Name}");
-        }
-        else {
-            memberInfos.Add(friendId.Id.Value, new MemberInfo() { 
-                IsMe = friendId.IsMe, 
-                ID = friendId.Id, 
-                Name = friendId.Name, 
-                IsReady = false 
-            });
-        }
-
-        OnReadyAll?.Invoke(!memberInfos.Any(t => t.Value.IsReady == false));
+        userInfos.Add(friendId.Id, new SteamUserInfoStruct() { Info = friendId });
     }
 
     private void OnLobbyEntered(Lobby lobby) {
@@ -429,52 +387,14 @@ public class GameNetworkManager : MonoBehaviour {
         Debug.Log($"OnLobbyEntered. LobbyID: {lobby.Id}, OwnerName: {lobby.Owner.Name}, OwnerID: {lobby.Owner.Id}");
 
         CurrentLobby = lobby;
-        UpdateLobbyData("Scene", SceneLoader.Instance.CurrentLoadedScene.ToString());
 
-        memberInfos.Clear();
-        foreach(Friend friend in lobby.Members) {
-            memberInfos.Add(friend.Id, new MemberInfo() {
-                IsMe = friend.IsMe,
-                ID = friend.Id,
-                Name = friend.Name,
-                IsReady = false
-            });
+        foreach(var info in lobby.Members) {
+            userInfos.Add(info.Id, new SteamUserInfoStruct() { Info = info });
         }
 
-        //SceneLoader.Instance.LoadScene(
-        //    SceneType.Lobby,
-        //    () => {
-        //        LoadingPanel.Instance.SetActive(true, 0.5f);
-        //        LoadingPanel.Instance.UpdateProgress();
-        //    },
-        //    () => {
-        //        LoadingPanel.Instance.SetActive(false, 0.5f);
-        //        LoadingPanel.Instance.StopProgressUpdate();
-        //    });
-
-        //string ipString = lobby.GetData("ip");
-        //uint? ip = null;
-        //try {
-        //    uint parse = uint.Parse(ipString);
-        //    ip = parse;
-        //}
-        //catch(Exception ex) {
-        //    Debug.LogError(ex.ToString());
-        //}
-        //StartClient(ip == null ? 0 : ip.Value, (value) => {
-        //StartClient(lobby.Id, (value) => { 
         StartClient(lobby.Owner.Id, (value) => {
             if(value) {
-                SceneLoader.Instance.LoadScene(
-                    SceneType.Lobby,
-                    () => {
-                        LoadingPanel.Instance.SetActive(true, 0.5f);
-                        LoadingPanel.Instance.UpdateProgress();
-                    },
-                    () => {
-                        LoadingPanel.Instance.SetActive(false, 0.5f);
-                        LoadingPanel.Instance.StopProgressUpdate();
-                    });
+                SceneLoader.Instance.LoadScene(SceneType.Lobby);
             }
             else {
                 Debug.Log("Failed enter lobby.");
@@ -493,12 +413,13 @@ public class GameNetworkManager : MonoBehaviour {
         lobby.SetJoinable(true);
         lobby.SetGameServer(lobby.Owner.Id);
 
-        memberInfos.Clear();
-        memberInfos.Add(lobby.Owner.Id.Value, new MemberInfo() { 
-            IsMe = true, 
-            ID = lobby.Owner.Id, 
-            Name = lobby.Owner.Name,
-            IsReady = false });
+        if(param != null) {
+            // Set Lobby Data
+
+            param = null;
+        }
+
+        userInfos.Add(lobby.Owner.Id, new SteamUserInfoStruct() { Info = lobby.Owner });
 
         Debug.Log($"OnLobbyCreated. owner: {lobby.Owner.Name}");
     }
@@ -525,11 +446,28 @@ public class GameNetworkManager : MonoBehaviour {
         }
     }
     #endregion
+}
 
-    private class MemberInfo {
-        public bool IsMe;
-        public SteamId ID;
-        public string Name;
-        public bool IsReady;
+public class SteamUserInfoStruct {
+    public Friend Info;
+    public Texture2D ThumbImage;
+    public Sprite ThumbSprite;
+
+
+
+    public async Task CreateThumb() {
+        Image? image = await Info.GetMediumAvatarAsync();
+        if(image != null) {
+            ThumbImage = new Texture2D((int)image.Value.Width, (int)image.Value.Height, TextureFormat.RGBA32, false, true);
+            ThumbImage.LoadRawTextureData(image.Value.Data);
+            ThumbImage.Apply();
+
+            ThumbSprite = Sprite.Create(ThumbImage, new Rect(0, 0, ThumbImage.width, ThumbImage.height), Vector2.zero);
+        }
+    }
+
+    public void DestroyImages() {
+        if(ThumbImage != null) UnityEngine.Object.Destroy(ThumbImage);
+        if(ThumbSprite != null) UnityEngine.Object.Destroy(ThumbSprite);
     }
 }

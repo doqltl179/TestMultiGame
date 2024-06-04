@@ -24,9 +24,12 @@ namespace Mu3Library {
     public enum SceneType {
         None,
 
+        Splash, 
+
         Main,
         Lobby, 
         Game,
+
         Credits,
     }
 }

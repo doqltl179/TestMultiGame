@@ -52,9 +52,7 @@ public class NetworkTransmission : NetworkBehaviour {
     public void ResetReady_ClientRpc(ulong from, bool value) {
         Debug.Log($"ResetReady_ClientRpc. from: {from}, value: {value}");
 
-        foreach(ulong id in GameNetworkManager.Instance.MemberIDs) {
-            GameNetworkManager.Instance.SetReady(id, false);
-        }
+
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -68,15 +66,6 @@ public class NetworkTransmission : NetworkBehaviour {
     public void MoveScene_ClientRpc(ulong from, SceneType scene) {
         Debug.Log($"MoveScene_ClientRpc. from: {from}, scene: {scene}");
 
-        SceneLoader.Instance.LoadScene(
-            scene,
-            () => {
-                LoadingPanel.Instance.SetActive(true, 0.5f);
-                LoadingPanel.Instance.UpdateProgress();
-            },
-            () => {
-                LoadingPanel.Instance.SetActive(false, 0.5f);
-                LoadingPanel.Instance.StopProgressUpdate();
-            });
+
     }
 }

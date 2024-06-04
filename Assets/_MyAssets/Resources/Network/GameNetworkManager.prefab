@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6509718550558662968}
   - component: {fileID: 2630158917594223372}
   - component: {fileID: 5901946073048489867}
-  - component: {fileID: 3832559671251922646}
+  - component: {fileID: 1360320934165382780}
   m_Layer: 0
   m_Name: GameNetworkManager
   m_TagString: Untagged
@@ -46,8 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 997a4b2f4f3afad49ad518f0cea9c123, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  transport: {fileID: 3832559671251922646}
+  transport: {fileID: 1360320934165382780}
   networkPlayerObj: {fileID: 5815646461435707476, guid: 0973d15870425ea428007ceaa7f232a3, type: 3}
+  networkTransmissionObj: {fileID: 5736160485005549902, guid: 8deabae7cd22fdf4ab206baca0cb76af, type: 3}
+  logCaptureObj: {fileID: 8011800027285521099, guid: 9589124c812340c48add8b06db1c7b69, type: 3}
 --- !u!114 &5901946073048489867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,12 +64,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NetworkConfig:
     ProtocolVersion: 0
-    NetworkTransport: {fileID: 3832559671251922646}
-    PlayerPrefab: {fileID: 4802449449288382361, guid: 0973d15870425ea428007ceaa7f232a3, type: 3}
+    NetworkTransport: {fileID: 1360320934165382780}
+    PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 95a207085363b9e46b0c2ab8a331895b, type: 2}
-    TickRate: 60
+      - {fileID: 11400000, guid: ccace50cfe31be14a9d9418f497896f8, type: 2}
+    TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -85,7 +87,7 @@ MonoBehaviour:
     OldPrefabList: []
   RunInBackground: 1
   LogLevel: 1
---- !u!114 &3832559671251922646
+--- !u!114 &1360320934165382780
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,7 +96,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2811453540629493168}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eeea77d16973c1c44b305c58cbad6b0e, type: 3}
+  m_Script: {fileID: 11500000, guid: 44dd247a00edbfa44b77868d755af6ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   steamAppId: 480
