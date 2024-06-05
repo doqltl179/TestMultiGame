@@ -9,8 +9,7 @@ using UnityEditor.Events;
 #endif
 
 [RequireComponent(typeof(Button))]
-[RequireComponent(typeof(EventTrigger))]
-public class AnimationButton : MonoBehaviour {
+public class AnimationButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IPointerMoveHandler {
     protected RectTransform rectTransform;
     protected Button button;
 
@@ -18,7 +17,7 @@ public class AnimationButton : MonoBehaviour {
         get => isSelected;
         set {
             if(isSelected != value) {
-
+                OnButtonSelectChanged(value);
 
                 isSelected = value;
             }
@@ -53,17 +52,6 @@ public class AnimationButton : MonoBehaviour {
             UnityEventTools.AddPersistentListener(onClickEvent, OnClick);
             btn.onClick = onClickEvent;
         }
-
-        EventTrigger et = GetComponent<EventTrigger>();
-        if(et != null) {
-            et.triggers.Clear();
-
-            AddTriggerEvent(et, EventTriggerType.PointerEnter, OnPointerEnter);
-            AddTriggerEvent(et, EventTriggerType.PointerExit, OnPointerExit);
-            AddTriggerEvent(et, EventTriggerType.PointerClick, OnPointerClick);
-            //AddTriggerEvent(et, EventTriggerType.Select, OnSelect);
-            //AddTriggerEvent(et, EventTriggerType.Deselect, OnDeselect);
-        }
     }
 
     private void AddTriggerEvent(EventTrigger trigger, EventTriggerType eventType, UnityEngine.Events.UnityAction<BaseEventData> eventAction) {
@@ -81,42 +69,29 @@ public class AnimationButton : MonoBehaviour {
     #region Action
     public virtual void OnButtonEnabledChanged(bool value) { Debug.Log($"{nameof(AnimationButton)}. OnButtonEnabledChanged."); }
 
+    public virtual void OnButtonSelectChanged(bool value) { Debug.Log($"{nameof(AnimationButton)}. OnButtonSelectChanged."); }
+
     public virtual void OnClick() { Debug.Log($"{nameof(AnimationButton)}. OnClick."); }
-
-    public virtual void OnPointerEnter(BaseEventData eventData) { 
-        Debug.Log($"{nameof(AnimationButton)}. OnPointerEnter.");
-
-        PointerEnterAnimation((PointerEventData)eventData);
-    }
-    public virtual void OnPointerExit(BaseEventData eventData) { 
-        Debug.Log($"{nameof(AnimationButton)}. OnPointerExit.");
-
-        PointerExitAnimation((PointerEventData)eventData);
-    }
-
-    public virtual void OnPointerClick(BaseEventData eventData) { 
-        Debug.Log($"{nameof(AnimationButton)}. OnPointerClick.");
-
-        PointerClickAnimation((PointerEventData)eventData);
-    }
-
-    public virtual void OnSelect(BaseEventData eventData) { 
-        Debug.Log($"{nameof(AnimationButton)}. OnSelect.");
-
-        SelectAnimation(eventData);
-    }
-    public virtual void OnDeselect(BaseEventData eventData) { 
-        Debug.Log($"{nameof(AnimationButton)}. OnDeselect.");
-
-        DeselectAnimation(eventData);
-    }
     #endregion
 
     protected virtual void PointerEnterAnimation(PointerEventData data) { }
     protected virtual void PointerExitAnimation(PointerEventData data) { }
-
+    protected virtual void PointerMoveAnimation(PointerEventData data) { }
     protected virtual void PointerClickAnimation(PointerEventData data) { }
 
-    protected virtual void SelectAnimation(BaseEventData data) { }
-    protected virtual void DeselectAnimation(BaseEventData data) { }
+    public void OnPointerEnter(PointerEventData eventData) {
+        PointerEnterAnimation(eventData);
+    }
+
+    public void OnPointerExit(PointerEventData eventData) {
+        PointerExitAnimation(eventData);
+    }
+
+    public void OnPointerClick(PointerEventData eventData) {
+        PointerClickAnimation(eventData);
+    }
+
+    public void OnPointerMove(PointerEventData eventData) {
+        PointerMoveAnimation(eventData);
+    }
 }

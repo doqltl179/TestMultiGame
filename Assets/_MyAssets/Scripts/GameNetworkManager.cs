@@ -203,6 +203,10 @@ public class GameNetworkManager : MonoBehaviour {
         callback?.Invoke();
     }
 
+    public async void JoinRequest(Lobby lobby) {
+        await lobby.Join();
+    }
+
     public void SendChat(string message) {
         CurrentLobby?.SendChatString(message);
     }

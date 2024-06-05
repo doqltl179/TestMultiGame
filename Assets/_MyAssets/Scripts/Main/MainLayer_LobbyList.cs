@@ -22,10 +22,14 @@ public class MainLayer_LobbyList : SceneUILayer {
     [SerializeField] private Toggle hidePwdToggle;
     [SerializeField] private Toggle hideFullToggle;
 
+    private LobbyIcon currentSelectedLobbyIcon;
+
 
 
     public override void OnActivate() {
         filterObj.SetActive(false);
+
+        currentSelectedLobbyIcon = null;
 
         hidePwdToggle.isOn = false;
         hideFullToggle.isOn = false;
@@ -69,7 +73,25 @@ public class MainLayer_LobbyList : SceneUILayer {
 
                 icon.transform.localScale = Vector3.one;
 
-                icon.SetIcon(GameNetworkManager.Instance.FilterLobbyList[i]);
+                icon.SetIcon(GameNetworkManager.Instance.FilterLobbyList[i], () => {
+                    if(currentSelectedLobbyIcon == null) {
+                        icon.IsSelected = true;
+
+                        currentSelectedLobbyIcon = icon;
+                    }
+                    else {
+                        currentSelectedLobbyIcon.IsSelected = false;
+
+                        if(currentSelectedLobbyIcon.Lobby.Id != icon.Lobby.Id) {
+                            icon.IsSelected = true;
+
+                            currentSelectedLobbyIcon = icon;
+                        }
+                        else {
+                            currentSelectedLobbyIcon = null;
+                        }
+                    }
+                });
 
                 lobbyIconList[i] = icon;
             }
@@ -101,6 +123,20 @@ public class MainLayer_LobbyList : SceneUILayer {
         hideFullToggle.isOn = savedHideFullIsOn;
 
         filterObj.SetActive(false);
+    }
+
+    public void OnClickJoin() {
+        if(currentSelectedLobbyIcon == null) {
+            Debug.Log("Lobby not selected.");
+
+            return;
+        }
+
+        GameNetworkManager.Instance.JoinRequest(currentSelectedLobbyIcon.Lobby);
+    }
+
+    public void OnClickCreateLobby() {
+
     }
     #endregion
 }

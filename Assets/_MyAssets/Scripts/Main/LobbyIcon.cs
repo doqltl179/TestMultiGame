@@ -23,6 +23,7 @@ public class LobbyIcon : AnimationButton {
     [SerializeField] private Image blockImage;
     [SerializeField] private Image hoverImage;
     [SerializeField] private Image selectImage;
+    [SerializeField] private Image clickEffectImage;
 
     [Space(20)]
     [SerializeField, Range(0.01f, 1.0f)] private float hoverAnimationTime = 0.2f;
@@ -30,6 +31,7 @@ public class LobbyIcon : AnimationButton {
     private Action OnClickAction;
 
     private IEnumerator hoverAnimationCoroutine = null;
+    private IEnumerator highlightAnimationCoroutine = null;
 
 
 
@@ -57,14 +59,14 @@ public class LobbyIcon : AnimationButton {
     #endregion
 
     public override void OnButtonEnabledChanged(bool value) {
-        base.OnButtonEnabledChanged(value);
-
         blockImage?.gameObject.SetActive(!value);
     }
 
-    public override void OnClick() {
-        base.OnClick();
+    public override void OnButtonSelectChanged(bool value) {
+        selectImage?.gameObject.SetActive(value);
+    }
 
+    public override void OnClick() {
         OnClickAction?.Invoke();
     }
 
@@ -80,6 +82,13 @@ public class LobbyIcon : AnimationButton {
 
         hoverAnimationCoroutine = HoverEndAnimationCoroutine();
         StartCoroutine(hoverAnimationCoroutine);
+    }
+
+    protected override void PointerClickAnimation(PointerEventData data) {
+        if(highlightAnimationCoroutine != null) StopCoroutine(highlightAnimationCoroutine);
+
+        highlightAnimationCoroutine = HighlightAnimationCoroutine();
+        StartCoroutine(highlightAnimationCoroutine);
     }
 
     private IEnumerator HoverStartAnimationCoroutine() {
@@ -114,5 +123,11 @@ public class LobbyIcon : AnimationButton {
         hoverImage.gameObject.SetActive(false);
 
         hoverAnimationCoroutine = null;
+    }
+
+    private IEnumerator HighlightAnimationCoroutine() {
+        yield return null;
+
+        highlightAnimationCoroutine = null;
     }
 }
