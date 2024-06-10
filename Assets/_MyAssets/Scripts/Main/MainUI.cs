@@ -1,6 +1,9 @@
 using Mu3Library.Scene;
+using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class MainUI : SceneUI {
@@ -13,6 +16,18 @@ public class MainUI : SceneUI {
     [SerializeField] private MainLayer_Lobby layer_lobby;
 
 
+
+    private void Awake() {
+        SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
+        GameNetworkManager.Instance.OnDisconnected += OnDisconnected;
+        //NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
+    }
+
+    private void OnDestroy() {
+        SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
+        GameNetworkManager.Instance.OnDisconnected -= OnDisconnected;
+        //NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
+    }
 
     public override void OnFirstActivate() {
         layer_main.Alpha = 0.0f;
@@ -47,4 +62,18 @@ public class MainUI : SceneUI {
 
     }
     #endregion
+
+    private void OnDisconnected() {
+        Transition(layer_lobbyList, 0.8f);
+    }
+
+    private void OnClientDisconnectCallback(ulong clientId) {
+        if(clientId == 0) {
+            Transition(layer_lobbyList, 0.8f);
+        }
+    }
+
+    private void OnLobbyEntered(Steamworks.Data.Lobby lobby) {
+        Transition(layer_lobby, 0.8f);
+    }
 }

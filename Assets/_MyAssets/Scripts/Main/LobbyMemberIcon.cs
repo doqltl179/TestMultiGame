@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class LobbyMemberIcon : MonoBehaviour {
-    public Friend Info { get; private set; }
+    public Friend? Info { get; private set; }
 
     [Space(20)]
     [SerializeField] private Image thumb;
@@ -22,10 +21,15 @@ public class LobbyMemberIcon : MonoBehaviour {
 
 
     #region Utility
-    public async Task SetIcon(Friend info, bool ready = false) {
-        thumb.sprite = await GameNetworkManager.Instance.GetThumbSprite(info.Id);
-
-        infoName.text = info.Name;
+    public async Task SetIcon(Friend? info, bool ready = false) {
+        if(info == null) {
+            thumb.sprite = null;
+            infoName.text = "";
+        }
+        else {
+            thumb.sprite = await GameNetworkManager.Instance.GetThumbSprite(info.Value.Id);
+            infoName.text = info.Value.Name;
+        }
 
         readyMark.SetActive(ready);
 

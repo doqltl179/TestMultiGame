@@ -79,6 +79,9 @@ public class GameNetworkManager : MonoBehaviour {
 
     private ChatController chatController;
 
+    public Action OnDisconnected;
+    public Action OnClientDisconnected;
+
     [Space(20)]
     [SerializeField] private LogCapture logCaptureObj;
     private LogCapture logCapture;
@@ -168,9 +171,12 @@ public class GameNetworkManager : MonoBehaviour {
         }
     }
 
-    public void Disconnect(Action callback = null) {
-        CurrentLobby = null;
-        FilterLobbyList = null;
+    public void Disconnect() {
+        if(CurrentLobby == null) {
+            Debug.Log("Lobby not exist.");
+
+            return;
+        }
 
         if(userInfos != null && userInfos.Count > 0) {
             foreach(var key in userInfos.Keys) {
@@ -181,6 +187,10 @@ public class GameNetworkManager : MonoBehaviour {
 
         CurrentLobby?.Leave();
         CurrentLobby = null;
+        FilterLobbyList = null;
+
+        OnDisconnected?.Invoke();
+
         if(NetworkManager.Singleton == null) {
             return;
         }
@@ -198,9 +208,8 @@ public class GameNetworkManager : MonoBehaviour {
         networkPlayerObject = null;
 
         NetworkManager.Singleton.Shutdown(true);
-        Debug.Log("Disconnected.");
 
-        callback?.Invoke();
+        Debug.Log("Disconnected.");
     }
 
     public async void JoinRequest(Lobby lobby) {
@@ -301,11 +310,7 @@ public class GameNetworkManager : MonoBehaviour {
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
 
         if(clientId == 0) {
-            Disconnect(() => {
-                if(SceneLoader.Instance.CurrentSceneType != SceneType.Main) {
-                    SceneLoader.Instance.LoadScene(SceneType.Main);
-                }
-            });
+            Disconnect();
         }
     }
 
@@ -368,9 +373,7 @@ public class GameNetworkManager : MonoBehaviour {
         if(id == friendId.Id) {
             Debug.Log("Owner leaved.");
 
-            Disconnect(() => {
-                SceneLoader.Instance.LoadScene(SceneType.Main);
-            });
+            Disconnect();
         }
         else {
             Debug.Log("Member leaved.");
@@ -398,7 +401,7 @@ public class GameNetworkManager : MonoBehaviour {
 
         StartClient(lobby.Owner.Id, (value) => {
             if(value) {
-                SceneLoader.Instance.LoadScene(SceneType.Lobby);
+                //SceneLoader.Instance.LoadScene(SceneType.Lobby);
             }
             else {
                 Debug.Log("Failed enter lobby.");

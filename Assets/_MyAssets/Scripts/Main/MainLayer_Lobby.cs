@@ -4,6 +4,7 @@ using Steamworks;
 using Steamworks.Data;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -12,16 +13,35 @@ public class MainLayer_Lobby : SceneUILayer {
     [SerializeField] private LobbyMemberIcon lobbyMemberIconObj;
     private Dictionary<ulong, LobbyMemberIcon> lobbyMembers = new Dictionary<ulong, LobbyMemberIcon>();
 
+    [Space(20)]
+    [SerializeField] private AnimationButton readyButton;
+    [SerializeField] private AnimationButton inviteButton;
+    [SerializeField] private AnimationButton exitButton;
 
+
+
+    private void Start() {
+        lobbyMemberIconObj.gameObject.SetActive(false);
+    }
 
     public override void OnActivate() {
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
+
+        readyButton.OnClickAction += OnClickReadyButton;
+        inviteButton.OnClickAction += OnClickInviteButton;
+        exitButton.OnClickAction += OnClickExitButton;
+
+        SetLobbyMembers(GameNetworkManager.Instance.CurrentLobby.Value.Members.ToArray());
     }
 
     public override void OnDeActivate() {
         SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
+
+        readyButton.OnClickAction -= OnClickReadyButton;
+        inviteButton.OnClickAction -= OnClickInviteButton;
+        exitButton.OnClickAction -= OnClickExitButton;
 
         if(lobbyMembers != null && lobbyMembers.Count > 0) {
             foreach(var key in lobbyMembers.Keys) {
@@ -68,11 +88,11 @@ public class MainLayer_Lobby : SceneUILayer {
             icon = Instantiate(lobbyMemberIconObj);
         }
         icon.transform.SetParent(lobbyMemberIconParent);
-        icon.gameObject.SetActive(true);
 
         icon.transform.localScale = Vector3.one;
 
         await icon.SetIcon(member);
+        icon.gameObject.SetActive(true);
 
         lobbyMembers.Add(member.Id, icon);
     }
@@ -87,6 +107,20 @@ public class MainLayer_Lobby : SceneUILayer {
         else {
             Debug.Log($"Member not found. name: {member.Name}");
         }
+    }
+    #endregion
+
+    #region Action
+    public void OnClickReadyButton() {
+
+    }
+
+    public void OnClickInviteButton() {
+
+    }
+
+    public void OnClickExitButton() {
+        GameNetworkManager.Instance.Disconnect();
     }
     #endregion
 }

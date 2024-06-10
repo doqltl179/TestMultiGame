@@ -28,8 +28,6 @@ public class LobbyIcon : AnimationButton {
     [Space(20)]
     [SerializeField, Range(0.01f, 1.0f)] private float hoverAnimationTime = 0.2f;
 
-    private Action OnClickAction;
-
     private IEnumerator hoverAnimationCoroutine = null;
     private IEnumerator highlightAnimationCoroutine = null;
 

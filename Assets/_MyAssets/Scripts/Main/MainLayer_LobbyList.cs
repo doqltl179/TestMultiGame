@@ -22,17 +22,30 @@ public class MainLayer_LobbyList : SceneUILayer {
     [SerializeField] private Toggle hidePwdToggle;
     [SerializeField] private Toggle hideFullToggle;
 
-    private LobbyIcon currentSelectedLobbyIcon;
+    [Space(20)]
+    [SerializeField] private AnimationButton joinButton;
+    [SerializeField] private AnimationButton lobbyCreateButton;
+
+    public LobbyIcon CurrentSelectedLobbyIcon {
+        get => currentSelectedLobbyIcon;
+        private set {
+            joinButton.ButtonEnabled = value != null;
+
+            currentSelectedLobbyIcon = value;
+        }
+    }
+    private LobbyIcon currentSelectedLobbyIcon = null;
 
 
 
     public override void OnActivate() {
         filterObj.SetActive(false);
 
-        currentSelectedLobbyIcon = null;
-
         hidePwdToggle.isOn = false;
         hideFullToggle.isOn = false;
+
+        joinButton.OnClickAction += OnClickJoin;
+        lobbyCreateButton.OnClickAction += OnClickCreateLobby;
 
         RefreshLobbyList();
     }
@@ -44,9 +57,14 @@ public class MainLayer_LobbyList : SceneUILayer {
             }
             lobbyIconList = null;
         }
+
+        joinButton.OnClickAction -= OnClickJoin;
+        lobbyCreateButton.OnClickAction -= OnClickCreateLobby;
     }
 
     private async void RefreshLobbyList() {
+        CurrentSelectedLobbyIcon = null;
+
         lobbyLoading.SetActive(true);
 
         if(lobbyIconList != null && lobbyIconList.Length > 0) {
@@ -74,24 +92,25 @@ public class MainLayer_LobbyList : SceneUILayer {
                 icon.transform.localScale = Vector3.one;
 
                 icon.SetIcon(GameNetworkManager.Instance.FilterLobbyList[i], () => {
-                    if(currentSelectedLobbyIcon == null) {
+                    if(CurrentSelectedLobbyIcon == null) {
                         icon.IsSelected = true;
 
-                        currentSelectedLobbyIcon = icon;
+                        CurrentSelectedLobbyIcon = icon;
                     }
                     else {
-                        currentSelectedLobbyIcon.IsSelected = false;
+                        CurrentSelectedLobbyIcon.IsSelected = false;
 
-                        if(currentSelectedLobbyIcon.Lobby.Id != icon.Lobby.Id) {
+                        if(CurrentSelectedLobbyIcon.Lobby.Id != icon.Lobby.Id) {
                             icon.IsSelected = true;
 
-                            currentSelectedLobbyIcon = icon;
+                            CurrentSelectedLobbyIcon = icon;
                         }
                         else {
-                            currentSelectedLobbyIcon = null;
+                            CurrentSelectedLobbyIcon = null;
                         }
                     }
                 });
+                icon.IsSelected = false;
 
                 lobbyIconList[i] = icon;
             }
@@ -126,13 +145,13 @@ public class MainLayer_LobbyList : SceneUILayer {
     }
 
     public void OnClickJoin() {
-        if(currentSelectedLobbyIcon == null) {
+        if(CurrentSelectedLobbyIcon == null) {
             Debug.Log("Lobby not selected.");
 
             return;
         }
 
-        GameNetworkManager.Instance.JoinRequest(currentSelectedLobbyIcon.Lobby);
+        GameNetworkManager.Instance.JoinRequest(CurrentSelectedLobbyIcon.Lobby);
     }
 
     public void OnClickCreateLobby() {

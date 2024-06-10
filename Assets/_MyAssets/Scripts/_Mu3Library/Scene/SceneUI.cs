@@ -86,6 +86,8 @@ namespace Mu3Library.Scene {
 
                     transitionSequence.AppendCallback(() => to.Interactable = true);
                 }
+
+                transitionSequence.AppendCallback(() => transitionSequence = null);
             }
             else {
                 if(from != null) {

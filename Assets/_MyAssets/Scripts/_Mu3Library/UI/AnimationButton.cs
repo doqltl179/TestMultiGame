@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System;
+
 
 #if UNITY_EDITOR
 using UnityEditor.Events;
@@ -35,6 +37,8 @@ public class AnimationButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             }
         }
     }
+
+    public Action OnClickAction;
 
 
 
@@ -71,7 +75,11 @@ public class AnimationButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public virtual void OnButtonSelectChanged(bool value) { Debug.Log($"{nameof(AnimationButton)}. OnButtonSelectChanged."); }
 
-    public virtual void OnClick() { Debug.Log($"{nameof(AnimationButton)}. OnClick."); }
+    public virtual void OnClick() { 
+        Debug.Log($"{nameof(AnimationButton)}. OnClick.");
+
+        OnClickAction?.Invoke();
+    }
     #endregion
 
     protected virtual void PointerEnterAnimation(PointerEventData data) { }
